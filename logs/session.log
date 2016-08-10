@@ -1,0 +1,440 @@
+//***                    [07/25/2016 8:14:43 pm] BEGIN SESSION                    ***//
+
+[07/25/2016 8:15:26 pm]: No XML files to process
+
+//***                     [07/25/2016 8:14:43 pm] END SESSION                     ***//
+
+//***                    [07/25/2016 8:19:28 pm] BEGIN SESSION                    ***//
+
+[07/25/2016 8:19:32 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[07/25/2016 8:19:50 pm]: Recorded 4 lines to export file apfeed/apfeed.LG.20160725201950
+[07/25/2016 8:19:55 pm]: Finished translatting 1 XML file(s) to apfeed.//***                    [07/25/2016 8:44:57 pm] BEGIN SESSION                    ***//
+
+[07/25/2016 8:44:58 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[07/25/2016 8:45:06 pm]: Recorded 4 lines to export file apfeed/apfeed.LG.20160725204506
+[07/25/2016 8:45:11 pm]: Finished translatting 1 XML file(s) to apfeed.
+[07/25/2016 8:45:25 pm]: Uploading apfeed.LG.20160725204506 to fis-depot-test.ucdavis.edu
+[07/25/2016 8:46:04 pm]: Upload result: 
+[07/25/2016 8:46:08 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [07/25/2016 8:44:57 pm] END SESSION                     ***//
+
+//***                    [07/28/2016 11:30:37 am] BEGIN SESSION                    ***//
+
+[07/28/2016 11:30:37 am]: FTP Errors occurred
+	Could not connect to FTP server <download_server_address>
+	FTP connection has failed!
+	Attempted to connect to <download_server_address> for user <ftp_username>
+
+//***                     [07/28/2016 11:30:37 am] END SESSION                     ***//
+
+//***                    [07/28/2016 11:30:38 am] BEGIN SESSION                    ***//
+//***                    [07/28/2016 11:32:39 am] BEGIN SESSION                    ***//
+
+[07/28/2016 11:32:39 am]: FTP Errors occurred
+	Could not connect to FTP server <download_server_address>
+	FTP connection has failed!
+	Attempted to connect to <download_server_address> for user <ftp_username>
+
+//***                     [07/28/2016 11:32:39 am] END SESSION                     ***//
+
+>>[08/08/2016 9:06:09 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 9:07:04 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 9:07:53 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 9:13:12 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 9:13:31 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 9:21:25 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 9:22:33 pm]: get_called_class() called from outside a class
+[08/08/2016 9:23:06 pm]: checking . for invoices
+
+[08/08/2016 9:23:06 pm]: read 0 lines from 
+
+[08/08/2016 9:23:06 pm]: checking .. for invoices
+
+[08/08/2016 9:23:06 pm]: read 0 lines from 
+
+[08/08/2016 9:23:06 pm]: checking .DS_Store for invoices
+
+[08/08/2016 9:23:06 pm]: read 0 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.2016072202920 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.2016072203132 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.2016072203451 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.2016072203830 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160724175424 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160724181637 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160724181651 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160724181957 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160724182650 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.2016072505707 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 9:23:06 pm]: read 2 lines from 
+
+[08/08/2016 9:23:06 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 9:27:32 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 9:28:16 pm]: get_called_class() called from outside a class
+[08/08/2016 9:28:35 pm]: checking apfeed.LG.2016072202920 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.2016072203132 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.2016072203451 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.2016072203830 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160724175424 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160724181637 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160724181651 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160724181957 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160724182650 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.2016072505707 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 9:29:31 pm]: read 2 lines from 
+
+[08/08/2016 9:29:31 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 9:29:49 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 9:31:44 pm]: get_called_class() called from outside a class
+[08/08/2016 9:31:51 pm]: checking apfeed.LG.2016072202920 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.2016072203132 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.2016072203451 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.2016072203830 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160724175424 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160724181637 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160724181651 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160724181957 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160724182650 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.2016072505707 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 9:37:16 pm]: read 4 lines from 
+
+[08/08/2016 9:37:16 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 9:37:28 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 9:38:11 pm]: get_called_class() called from outside a class
+[08/08/2016 9:38:17 pm]: checking apfeed.LG.2016072202920 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.2016072203132 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.2016072203451 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.2016072203830 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160724175424 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160724181637 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160724181651 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160724181957 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160724182650 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.2016072505707 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 9:40:36 pm]: read 4 lines from 
+
+[08/08/2016 9:40:36 pm]: Created check log ./logs/checks.log
+
+[08/08/2016 9:46:32 pm]: get_called_class() called from outside a class
+[08/08/2016 9:46:32 pm]: checking apfeed.LG.2016072202920 for invoices
+
+[08/08/2016 9:51:59 pm]: read 4 lines from 
+
+[08/08/2016 9:52:07 pm]: checking apfeed.LG.2016072203132 for invoices
+
+[08/08/2016 9:52:23 pm]: read 4 lines from 
+
+[08/08/2016 9:52:41 pm]: checking apfeed.LG.2016072203451 for invoices
+
+[08/08/2016 9:52:51 pm]: read 4 lines from 
+
+[08/08/2016 9:52:55 pm]: checking apfeed.LG.2016072203830 for invoices
+
+[08/08/2016 9:53:08 pm]: read 4 lines from 
+
+[08/08/2016 9:53:08 pm]: checking apfeed.LG.20160724175424 for invoices
+
+[08/08/2016 9:53:12 pm]: read 4 lines from 
+
+[08/08/2016 9:53:12 pm]: checking apfeed.LG.20160724181637 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.20160724181651 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.20160724181957 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.20160724182650 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.2016072505707 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 9:53:16 pm]: read 4 lines from 
+
+[08/08/2016 9:53:16 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 9:57:48 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 10:04:07 pm]: get_called_class() called from outside a class
+[08/08/2016 10:04:07 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 10:04:07 pm]: read 4 lines from apfeed.LG.20160725191519
+
+[08/08/2016 10:04:07 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 10:04:07 pm]: read 4 lines from apfeed.LG.20160725201950
+
+[08/08/2016 10:04:07 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 10:06:57 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 10:09:22 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 10:13:06 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 10:14:44 pm]:  Check log already exists. Halting process conversion process. 
+>>[08/08/2016 10:15:08 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 10:19:14 pm]: get_called_class() called from outside a class
+[08/08/2016 10:19:14 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 10:19:14 pm]: read 4 lines from apfeed.LG.20160725191519
+
+[08/08/2016 10:19:14 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 10:19:14 pm]: read 4 lines from apfeed.LG.20160725201950
+
+[08/08/2016 10:19:14 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 10:19:21 pm]:  Check log already exists. Halting process conversion process. 
+
+[08/08/2016 10:22:31 pm]: get_called_class() called from outside a class
+[08/08/2016 10:22:31 pm]: checking apfeed.LG.20160725191519 for invoices
+
+[08/08/2016 10:22:31 pm]: read 4 lines from apfeed.LG.20160725191519
+
+[08/08/2016 10:22:31 pm]: checking apfeed.LG.20160725201950 for invoices
+
+[08/08/2016 10:22:31 pm]: read 4 lines from apfeed.LG.20160725201950
+
+[08/08/2016 10:22:31 pm]: Created check log ./logs/checks.log
+>>[08/08/2016 10:22:37 pm]:  Check log already exists. Halting process conversion process. 
+//***                    [08/09/2016 8:30:48 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:31:01 pm]: No XML files to process
+
+//***                     [08/09/2016 8:30:48 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:31:58 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:32:04 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:34:09 pm]: Recorded 4 lines to export file ./apfeedapfeed.LG.20160809203315
+[08/09/2016 8:36:26 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:36:26 pm]: Uploading apfeedapfeed.LG.20160809203315 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:36:26 pm]: Upload result: 
+[08/09/2016 8:36:26 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:31:58 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:38:37 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:38:37 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:39:00 pm]: Recorded 4 lines to export file ./apfeedapfeed.LG.20160809203837
+[08/09/2016 8:39:00 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:39:00 pm]: Uploading apfeedapfeed.LG.20160809203837 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:39:00 pm]: Upload result: 
+[08/09/2016 8:39:00 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:38:37 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:40:50 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:40:50 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:41:58 pm]: Recorded 4 lines to export file ./apfeedapfeed.LG.20160809204050
+[08/09/2016 8:41:58 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:41:58 pm]: Uploading apfeedapfeed.LG.20160809204050 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:41:58 pm]: Upload result: 
+[08/09/2016 8:41:58 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:40:50 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:43:08 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:43:08 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:43:57 pm]: Recorded 4 lines to export file ./apfeedapfeed.LG.20160809204308
+[08/09/2016 8:44:38 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:44:52 pm]: Uploading apfeedapfeed.LG.20160809204308 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:44:54 pm]: Upload result: 
+[08/09/2016 8:45:05 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:43:08 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:49:08 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:49:08 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:49:52 pm]: Recorded 4 lines to export file ./apfeedapfeed.LG.20160809204908
+[08/09/2016 8:49:52 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:49:52 pm]: Uploading apfeedapfeed.LG.20160809204908 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:49:52 pm]: Upload result: 
+[08/09/2016 8:49:52 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:49:08 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 8:50:00 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 8:50:00 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 8:50:08 pm]: Recorded 4 lines to export file ./apfeed/apfeed.LG.20160809205000
+[08/09/2016 8:50:10 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 8:50:10 pm]: Uploading apfeed.LG.20160809205000 to fis-depot-test.ucdavis.edu
+[08/09/2016 8:50:10 pm]: Upload result: 
+[08/09/2016 8:50:10 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 8:50:00 pm] END SESSION                     ***//
+
+//***                    [08/09/2016 10:16:16 pm] BEGIN SESSION                    ***//
+
+[08/09/2016 10:16:16 pm]: Getting 1450761570003126-1463609711139.xml for processing
+[08/09/2016 10:16:19 pm]: Recorded 4 lines to export file ./apfeed/apfeed.LG.20160809221616
+[08/09/2016 10:16:21 pm]: Finished translatting 1 XML file(s) to apfeed.
+[08/09/2016 10:16:21 pm]: Uploading apfeed.LG.20160809221616 to fis-depot-test.ucdavis.edu
+[08/09/2016 10:16:21 pm]: Upload result: 
+[08/09/2016 10:16:21 pm]: Finished uploading 1 apfeed file(s).
+
+//***                     [08/09/2016 10:16:16 pm] END SESSION                     ***//
+
