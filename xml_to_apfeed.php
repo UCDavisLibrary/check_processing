@@ -1,22 +1,24 @@
 <?php
 /*
  * Application:
- *                  Import/Translate/Upload XML files to text files
+ *                  Import/Translate/Upload XML files to text files. Transfer those files to the target server via SCP for processing by Finance.
+ *                  Log all activity in session.log.  Also store all output data in JSON format (invoice.log) for future processing by update_alma.php.
  * Author:
  *                  Michael Baxter
  * email: 
  *                  michael@e2-photo.com
  * Last updated:
- *                  08/08/2016
+ *                  08/09/2016
  *                  
  */
 
-// Set to TRUE for testing and debugging.
+// Set DEBUT to TRUE for testing and debugging.
 // affects some variable settings and error output.
-defined('DEBUG') or define('DEBUG', TRUE);
+defined('DEBUG') or define('DEBUG', FALSE);
 
 date_default_timezone_set("America/Los_Angeles");
 
+// default relative paths for key output files
 $invoice_log_path     = './logs/invoice.log';
 $apfeed_path        = './apfeed/';
 
@@ -60,15 +62,9 @@ if (SCP_OR_FTP == "FTP") {
 }
 
 /*
- * timeStamp()
- * 
- * Purpose:
- *      Provides a formatted current time stamp for inclusion
- *      in the log file.
- *  Input:
- *      N/A
- *  Output:
- *      Formatted date/time string bracketed by [];
+ *  Provides a formatted current time stamp for inclusion in the log file.
+ *  
+ *  @return string date/time string bracketed by [] for logging;
  */
 function timeStamp(){
     return "\n".'['.date("m/d/Y g:i:s a",strtotime('now')).']';
@@ -215,6 +211,13 @@ function PMT_TAX_CD($vat_amt){
         return '0';
     }
 }
+/*
+ * Formats PMT_AMT to 12 character spaces, including a leading "-" for negative numbers, and left-filled with zeroes
+ * 
+ * @param string ttl_price - parsed from XML to be converted to floating point.
+ * 
+ * @return string $out - a left-filled formatted string representation of ttl_price
+ */
 function PMT_AMT($ttl_price){
     $ttl = floatval($ttl_price)*100;
     $out = sprintf("%'.012d",$ttl);
@@ -235,21 +238,20 @@ function RECORD_CT($records){
     return substr($out,-6);    
 }
 /*
- * local_get_xml()
- *
- * Purpose:
  *      Retrieves XML files from a local (local to this file) file
  *      system, and gathers path information into an array for further
  *      processing.
- * Input:
+ *      
+ *      If errors occur while copying files, the process
+ *      continues after logging the errors directly.
+ *      
+ * @param string date dt_last_run
  *      Last modified date from the Log file, or 1 year ago (if
  *      the log file didn't already exist.
- * Output:
+ * @return array file_paths
  *      Returns an array containing a list of filepaths for 
  *      XML files copies to this applications XML folder for 
  *      processing.
- *      If errors occur while copying files, the process
- *      continues after logging the errors directly.
  *
  */
 function local_get_xml($dt_last_run){
@@ -309,18 +311,15 @@ function local_get_xml($dt_last_run){
 
 }
 /*
- * ftp_get_xml()
- * 
- * Purpose:
  *      Attempts to use FTP to retrieve XML files that have
  *      been posted since the last time this function ran.
  *      If found, downloads the files to the local XML folder
  *      and gathers path information into an array for further
  *      processing.
- * Input:
+ * @param date dt_last_run
  *      Last modified date from the Log file, or 1 year ago (if
  *      the log file didn't already exist.
- * Output:
+ * @return array of arrays
  *      Returns an array containing two arrays (1. FTP Errors, and
  *      2. List of filepaths for downloaded XML files).
  *      The recipient must examine the arrays to see which

@@ -2,20 +2,20 @@
 /*
  * Application:
  *                  Read the list of invoices to research from invoice.log. Try to find
- *                  the file info in the finance database. If found, update Alma via
- *                  web api, to indicate process status.
+ *                  the file info in the finance database using KFS Query. If found, update Alma via
+ *                  web api, to indicate process status (require php_curl).
  * Author:
  *                  Michael Baxter
  * email:
  *                  michael@e2-photo.com
  * Last updated:
- *                  08/08/2016
+ *                  08/09/2016
  *
  */
 use PDOOCI\PDO;
-
 require_once 'inc/class.PDOOCI.php';
 
+// relative path locations for key input/output logs
 $invoice_log_path     = './logs/invoice.log';
 $apfeed_path        = './apfeed';
 
