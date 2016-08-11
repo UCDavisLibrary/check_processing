@@ -16,8 +16,9 @@ use PDOOCI\PDO;
 require_once 'inc/class.PDOOCI.php';
 
 // relative path locations for key input/output logs
-$invoice_log_path     = './logs/invoice.log';
+$invoice_log_path   = './logs/invoice.log';
 $apfeed_path        = './apfeed';
+$alma_api_key       = 'l7xx768e97ddd72b4177a913f6b804041661';
 
 /*
  *  Provides a formatted current time stamp for inclusion
@@ -60,9 +61,11 @@ function add_items(&$arrInvoices,$arrLine){
  *  
  *  @return boolean success to indicate if a matching record was found
  */
-function get_alma_record($row_data){
+function get_alma_record($invoice_number){
+    global $alma_api_key;
     
-    $url="https://.../almaws/v1/acq/invoices/?q=";
+    //API Url
+    $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/invoices?apikey={$alma_api_key}&format=json&q=invoice_number~$invoice_number";
     
     //  Initiate curl
     $ch = curl_init();
@@ -76,14 +79,26 @@ function get_alma_record($row_data){
     // Set the url
     curl_setopt($ch, CURLOPT_URL,$url);
     
+    //Set the content type to application/json
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+    
     // Execute
     $result=curl_exec($ch);
     
     // Closing
     curl_close($ch);
     
-    // Will dump a beauty json :3
-    var_dump(json_decode($result, true));    
+    $arrDecoded = json_decode($result,TRUE);
+    
+    $arrInvoice = (is_array($arrDecoded) && array_key_exists('invoice', $arrDecoded) ? $arrDecoded['invoice'] : NULL);
+        
+    if (is_array($arrInvoice) && !empty($arrInvoice)){
+        $invoice_line = $arrInvoice[0]['invoice_line'][0];
+        $po_line = array_key_exists('po_line', $invoice_line) ? $invoice_line['po_line'] : FALSE;        
+        return $link == '' ? FALSE : $link;
+    }else{
+        return FALSE;
+    }
 }
 /*
  *  Push update information to Alma via the Web APIs provided
@@ -94,27 +109,47 @@ function get_alma_record($row_data){
  *  @return boolean $success to indicate if we updated properly
  */
 function update_alma_record($row_data){
-    //API Url
-    $url = 'http://example.com/api/JSON/create';
+    global $alma_api_key;
     
-    //Initiate cURL.
-    $ch = curl_init($url);
+    // get the alma record to ensure we have something to update
+    $po_line = get_alma_record($row_data['VENDOR_INVOICE_NUM']);
+    
+    if ($po_line !== FALSE){
         
-    //Encode the array into JSON. 
-    //(mvb ... we probably want a subset of the data, and we need the API Key)
-    $jsonDataEncoded = json_encode($row_data);
-    
-    //Tell cURL that we want to send a POST request.
-    curl_setopt($ch, CURLOPT_POST, 1);
-    
-    //Attach our encoded JSON string to the POST fields.
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-    
-    //Set the content type to application/json
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-    
-    //Execute the request
-    $result = curl_exec($ch);
+        //API Url
+        $url = $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/po-lines/{$po_line}?apikey={$alma_api_key}&format=json";
+        
+        //Initiate cURL.
+        $ch = curl_init($url);
+            
+        $updates = array(
+            "invoice_status"=>'',
+            "invoice_workflow_status"=>''
+        );
+                    
+        
+        //Encode the array into JSON. 
+        //(mvb ... we probably want a subset of the data, and we need the API Key)
+        $jsonDataEncoded = json_encode($updates);
+        
+        //Tell cURL that we want to send a PUT request.
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+        
+        //Attach our encoded JSON string to the POST fields.
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+        
+        //Set the content type to application/json
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        
+        // for testing ... to prevent accidentally updating something
+        return TRUE;
+        //Execute the request
+        //$result = curl_exec($ch);
+                
+    } else {
+        return FALSE;
+    }
 }
 /*
  *  Main process
@@ -207,27 +242,38 @@ if (file_exists($invoice_log_path)){
                               on DT.doc_typ_id = DH.doc_typ_id
                           where cm_feed_cd = 'LG'
                         )
+                      where vendor_id like '%'||:vend_id||'%'  
+                      and vendor_invoice_num = :inv_nbr
                       order by doc_num
 EOT;
         $statement = $dafis_dbh->prepare($kfs_query);
         
         $dump_file = fopen('./logs/dump.log','w');
         
-        $invoice_count = 0;
+        $last_invoice = '';
+        
         
         // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
         foreach($arrInvoices as $invoice){
-            $statement->execute(array(':batch_id_nbr' => $invoice['BATCH_ID_NBR']));
-            
-            // loop through result rows updating alma via the Web APIs
-            while ($row = $statement->fetch()){
-                $invoice_count += 1;
-                //update Alma via Web API
-                //update_alma($row);
-                fwrite($dump_file,json_encode($row));
-                if ($invoice_count > 5) break 2;
+            if ($invoice['VEND_ASSIGN_INV_NBR'] !== $last_invoice){
+                $last_invoice = $invoice['VEND_ASSIGN_INV_NBR'];
+                
+                $inv_nbr = $invoice['VEND_ASSIGN_INV_NBR']*1;
+                $vend_id = (string)$invoice['VEND_NBR']*1;
+                $statement->execute( array(':inv_nbr' => $inv_nbr,':vend_id'=>$vend_id) );            
+                
+                // loop through result rows updating alma via the Web APIs
+                while ($row = $statement->fetch()){
+                    //update Alma via Web API
+                    $updated_alma = update_alma_record((array)$row);
+                    fwrite($dump_file,json_encode($row));
+                    
+                    // go ahead and break. We only need to update once 
+                    break;
+                }
+            } else {
+                $invoice['ALMA_UPDATED']=$updated_alma;
             }
-            if ($invoice_count > 10) break;
         }
         
         fclose($dump_file);
