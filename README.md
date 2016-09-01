@@ -9,6 +9,7 @@ The apfeed output file is stored in the "apfeed" folder, and log files are store
 ### Update: 8/31/2016 ###
 
 Lisa sent a new XML input file and errors that had been generated.  The following updates were applied:
+
 * Updated xml_to_apfeed.php to account for the variance in XML data found in the new input file.
 	* All functions that received input values from the XML input file were adjusted to account for potentially missing data.
 	* All items that relied on vendor_FinancialSys_Code were updated to use vendor_additional_code instead. This value appears consistently in both input files, and matches values sometimes found in vendor_FinancialSys_Code.
