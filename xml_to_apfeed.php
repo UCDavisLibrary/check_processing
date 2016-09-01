@@ -8,7 +8,7 @@
  * email: 
  *                  michael@e2-photo.com
  * Last updated:
- *                  08/09/2016
+ *                  08/31/2016
  *                  
  */
 
@@ -87,7 +87,7 @@ function EMP_IND(){
     return 'N';
 }
 function VEND_NBR($vendor_code){
-    $out = trim($vendor_code).str_repeat(' ',10);
+    $out = isset($vendor_code) && $vendor_code !== '' ? trim($vendor_code).str_repeat(' ',10) : str_repeat(' ',10);
     return substr($out,0,10);
 }
 function VEND_ASSIGN_INV_NBR($invoice_nbr){
@@ -99,11 +99,11 @@ function VEND_ASSIGN_INV_DT($invoice_dt){
     return date('Ymd',strtotime($arrDateParts[2].'-'.$arrDateParts[0].'-'.$arrDateParts[1]) );
 }
 function ADDR_SELECT_VEND_NBR($vendor_code){
-    $out = substr(trim($vendor_code),0,10);
+    $out = isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code.str_repeat(' ',10)),0,10) : str_repeat(' ',10);
     return $out;
 }
 function VEND_ADDR_TYP_CD($vendor_code){
-    $out = substr(trim($vendor_code),-4);
+    $out = isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code),-4) : str_repeat(' ',4);
     return $out;
 }
 function PMT_REMIT_NM(){
@@ -463,11 +463,11 @@ function export_to_apfeed($xml_files){
                                     $inv_item['BATCH_ID_NBR']        =  $header_fields['BATCH_ID_NBR'];
                                     $inv_item['ORG_DOC_NBR']         =  ORG_DOC_NBR((string)$ini->org_doc_nbr);
                                     $inv_item['EMP_IND']             =  EMP_IND();
-                                    $inv_item['VEND_NBR']            =  VEND_NBR($invoice->vendor_FinancialSys_Code);
+                                    $inv_item['VEND_NBR']            =  VEND_NBR($invoice->vendor_additional_code);
                                     $inv_item['VEND_ASSIGN_INV_NBR']     = VEND_ASSIGN_INV_NBR($invoice->invoice_number);
                                     $inv_item['VEND_ASSIGN_INV_DT']      = VEND_ASSIGN_INV_DT($invoice->invoice_date);
-                                    $inv_item['ADDR_SELECT_VEND_NBR']    = ADDR_SELECT_VEND_NBR($invoice->vendor_FinancialSys_Code);
-                                    $inv_item['VEND_ADDR_TYP_CD']        = VEND_ADDR_TYP_CD($invoice->vendor_FinancialSys_Code);
+                                    $inv_item['ADDR_SELECT_VEND_NBR']    = ADDR_SELECT_VEND_NBR($invoice->vendor_additional_code);
+                                    $inv_item['VEND_ADDR_TYP_CD']        = VEND_ADDR_TYP_CD($invoice->vendor_additional_code);
                                     $inv_item['PMT_REMIT_NM']            = PMT_REMIT_NM();
                                     $inv_item['PMT_REMIT_LINE_1_ADDR']   = PMT_REMIT_LINE_1_ADDR();
                                     $inv_item['PMT_REMIT_LINE_2_ADDR']   = PMT_REMIT_LINE_2_ADDR();
@@ -478,7 +478,11 @@ function export_to_apfeed($xml_files){
                                     $inv_item['PMT_REMIT_CNTRY_CD']      = PMT_REMIT_CNTRY_CD();
                                     $inv_item['VEND_ST_RES_IND']         = VEND_ST_RES_IND();
                                     $inv_item['INV_RECEIVED_DT']         = INV_RECEIVED_DT();
-                                    $inv_item['GOODS_RECEIVED_DT']       = GOODS_RECEIVED_DT($invoice->noteList->note->owneredEntity->creationDate);
+                                    if (property_exists($invoice, 'noteList')){
+                                        $inv_item['GOODS_RECEIVED_DT']       = GOODS_RECEIVED_DT($invoice->noteList->note->owneredEntity->creationDate);
+                                    }else{
+                                        $inv_item['GOODS_RECEIVED_DT']       = GOODS_RECEIVED_DT($invoice->owneredEntity->creationDate);
+                                    }
                                     $inv_item['ORG_SHP_ZIP_CD']          = ORG_SHP_ZIP_CD('95616-5292');
                                     $inv_item['ORG_SHP_STATE_CD']        = ORG_SHP_STATE_CD('CA');
                                     $inv_item['PMT_GRP_CD']              = PMT_GRP_CD();

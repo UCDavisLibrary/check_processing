@@ -61,7 +61,7 @@ function add_items(&$arrInvoices,$arrLine){
  *  
  *  @return boolean success to indicate if a matching record was found
  */
-function get_alma_record($invoice_number){
+function get_alma_po_line($invoice_number){
     global $alma_api_key;
     
     //API Url
@@ -112,7 +112,7 @@ function update_alma_record($row_data){
     global $alma_api_key;
     
     // get the alma record to ensure we have something to update
-    $po_line = get_alma_record($row_data['VENDOR_INVOICE_NUM']);
+    $po_line = get_alma_po_line($row_data['VENDOR_INVOICE_NUM']);
     
     if ($po_line !== FALSE){
         
@@ -121,10 +121,19 @@ function update_alma_record($row_data){
         
         //Initiate cURL.
         $ch = curl_init($url);
-            
+
+        
+        /*
+         *  Payment_status would be updated from “NOT_PAID” to “PAID”
+         *  voucher_number would come from KFS field "CHECK_NUM"
+         *  voucher_date => … "PAYMENT_ENTERED_DATE"
+         *  voucher_amount => … "PAYMENT_TOTAL_AMT"
+         */
         $updates = array(
-            "invoice_status"=>'',
-            "invoice_workflow_status"=>''
+            "payment_status"=>'PAID',
+            "voucher_number"=>'C10457745',
+            "voucher_date"=>'20160719',
+            "voucher_amount"=>24.14            
         );
                     
         
