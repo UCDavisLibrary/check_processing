@@ -76,35 +76,40 @@ function BATCH_ID_NBR(){
     return date('YmdGis',strtotime('now'));
 }
 function FEED_NM($name){
-    $out = str_ireplace(' ','',strtoupper($name)) . str_repeat(' ',15);
+    $out = (isset($name) && trim($name)!=='' ? str_ireplace(' ','',strtoupper($name)) : ''). str_repeat(' ',15);
 	return substr($out, 0,15);    	
 }
 function ORG_DOC_NBR($in){
-    $out = trim($in).str_repeat(' ',7);
+    $out = (isset($in) && trim($in)!=='' ? trim($in) : '').str_repeat(' ',7);
     return substr($out,0,7);
 }
 function EMP_IND(){
     return 'N';
 }
 function VEND_NBR($vendor_code){
-    $out = isset($vendor_code) && $vendor_code !== '' ? trim($vendor_code).str_repeat(' ',10) : str_repeat(' ',10);
+    $out = ( isset($vendor_code) && $vendor_code !== '' ? trim($vendor_code) : '' ) . str_repeat(' ',10);
     return substr($out,0,10);
 }
 function VEND_ASSIGN_INV_NBR($invoice_nbr){
-    $out = trim($invoice_nbr).str_repeat(' ',15);
+    $out = ( isset($invoice_nbr) && trim($invoice_nbr)!=='' ? trim($invoice_nbr) : '') . str_repeat(' ',15);
     return substr($out,0,15);
 }
 function VEND_ASSIGN_INV_DT($invoice_dt){
-    $arrDateParts = explode('/',$invoice_dt);
-    return date('Ymd',strtotime($arrDateParts[2].'-'.$arrDateParts[0].'-'.$arrDateParts[1]) );
+    if (isset($invoice_dt) && trim($invoice_dt) !== ''){
+        $arrDateParts = explode('/',$invoice_dt);
+        $out = date('Ymd',strtotime($arrDateParts[2].'-'.$arrDateParts[0].'-'.$arrDateParts[1]) );
+    } else {
+        $out = str_repeat(' ', 8);
+    }
+    return $out;
 }
 function ADDR_SELECT_VEND_NBR($vendor_code){
-    $out = isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code.str_repeat(' ',10)),0,10) : str_repeat(' ',10);
-    return $out;
+    $out = ( isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code),0,10) : '') . str_repeat(' ',10);
+    return substr($out,0,10);
 }
 function VEND_ADDR_TYP_CD($vendor_code){
-    $out = isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code),-4) : str_repeat(' ',4);
-    return $out;
+    $out =  ( isset($vendor_code) && trim($vendor_code) !== '' ? substr(trim($vendor_code),-4) : '') . str_repeat(' ',4);
+    return substr($out,0,4);
 }
 function PMT_REMIT_NM(){
     return str_repeat(' ',40);
@@ -137,14 +142,15 @@ function INV_RECEIVED_DT(){
     return str_repeat(' ',8);
 }
 function GOODS_RECEIVED_DT($creationDate){
-    return trim($creationDate);
+    $out = (isset($creationDate) && trim($creationDate)!=='' ? trim($creationDate) : '').str_repeat(' ',8);
+    return substr($out,0,8);
 }
 function ORG_SHP_ZIP_CD($zip){
-    $out = trim($zip). str_repeat(' ',11);
+    $out =  (isset($zip) && trim($zip)!=='' ? trim($zip) : ''). str_repeat(' ',11);
     return substr($out,0,11);
 }
 function ORG_SHP_STATE_CD($state){
-    $out = trim($state). str_repeat(' ',2);
+    $out = (isset($state) && trim($state) !== '' ? trim($state) : ''). str_repeat(' ',2);
     return substr($out,0,2);
 }
 function PMT_GRP_CD(){
@@ -157,7 +163,8 @@ function DISC_TERM_CD(){
     return str_repeat(' ',2);
 }
 function SCHEDULED_PMT_DT($dt_str){
-    return isset($dt_str) && trim($dt_str) !== '' ? substr($dt_str,0,8) : str_repeat(' ',8);
+    $out = (isset($dt_str) && trim($dt_str) !== '' ? substr($dt_str,0,8) : '') .str_repeat(' ',8);
+    return substr($out,0,8);
 }
 function PMT_NON_CHECK_IND(){
     return 'N';
@@ -166,15 +173,15 @@ function ATTACHMENT_REQ_IND(){
     return 'N';
 }
 function PMT_LINE_NBR($line_number){
-    $out = str_repeat('0',5).trim($line_number);
+    $out = str_repeat('0',5) . (isset($line_number) && trim($line_number)!=='' ? trim($line_number) : '' );
     return substr($out,-5);
 }
 function FIN_COA_CD($cd){
-    $out = trim($cd) . str_repeat(' ',2);
+    $out = (isset($cd) && trim($cd)!=='' ? trim($cd) : '') . str_repeat(' ',2);
     return substr($out,0,2);
 }
 function ACCOUNT_NBR($id){
-    $out = trim($id).str_repeat(' ',7);
+    $out = ( isset($id) && trim($id)!=='' ? trim($id) : '' ) . str_repeat(' ',7);
     return substr($out,0,7);
 }
 function SUB_ACCT_NBR(){
@@ -200,11 +207,11 @@ function ORG_REFERENCE_ID($po_ln_num){
     return substr($out,0,8); 
 }
 function PMT_TAX_CD($vat_amt){
-    // Per Lisa Spagnola:
-    // formula will go here
-    // when we figure out how
-    // to calculate;
-    $vat = floatval($vat_amt);
+    if (isset($vat_amt) && trim($vat_amt)!==''){    
+        $vat = floatval($vat_amt);
+    } else {
+        $vat = 0;
+    }
     if ($vat > 0){
         return 'A';
     } else {
@@ -219,7 +226,7 @@ function PMT_TAX_CD($vat_amt){
  * @return string $out - a left-filled formatted string representation of ttl_price
  */
 function PMT_AMT($ttl_price){
-    $ttl = floatval($ttl_price)*100;
+    $ttl = floatval(isset($ttl_price) && trim($ttl_price)!=='' ? $ttl_price : '0')*100;
     $out = sprintf("%'.012d",$ttl);
     return $out;
 }
@@ -230,11 +237,11 @@ function EFT_OVERRIDE_IND(){
     return 'N';
 }
 function AP_PMT_PURPOSE_DESC($desc){
-    $out = str_repeat(' ',120) . trim($desc);
+    $out = str_repeat(' ',120) . (isset($desc) && trim($desc)!== '' ? trim($desc) : '');
     return substr($out,0,120);
 }
 function RECORD_CT($records){
-    $out = str_repeat('0',6) . (string)$records;
+    $out = str_repeat('0',6) . (isset($records) && trim((string)$records)!=='' ? (string)$records : '');
     return substr($out,-6);    
 }
 /*
