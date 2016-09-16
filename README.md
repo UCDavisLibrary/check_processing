@@ -6,6 +6,12 @@ The process makes a local working copy of the XML file in its "xml" folder, to e
 
 The apfeed output file is stored in the "apfeed" folder, and log files are stored in the "logs" folder.
 
+### Update: 9/15/2016 ###
+
+James reported an error with the apfeed header causing a file to be rejected.
+
+* Updated the BATCH_ID_NBR function to use leading zeroes for all date/time values.
+
 ### Update: 8/31/2016 ###
 
 Lisa sent a new XML input file and errors that had been generated.  The following updates were applied:

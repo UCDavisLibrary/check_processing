@@ -9,12 +9,15 @@
  *                  michael@e2-photo.com
  * Last updated:
  *                  08/31/2016
+ *  -   All functions that received input values from the XML input file were adjusted to account for potentially missing data.
+ *  -   All items that relied on vendor_FinancialSys_Code were updated to use vendor_additional_code instead. This value appears consistently in both input files, and matches values sometimes found in vendor_FinancialSys_Code.
+ *  -   GOODS_RECEIVED_DT updated to use notList->note->owneredEntity when notelist is available. Otherwise, directly accessed owneredEntity (lines 481-485)
  *                  
  */
 
 // Set DEBUT to TRUE for testing and debugging.
 // affects some variable settings and error output.
-defined('DEBUG') or define('DEBUG', FALSE);
+defined('DEBUG') or define('DEBUG', TRUE);
 
 date_default_timezone_set("America/Los_Angeles");
 
@@ -73,7 +76,7 @@ function timeStamp(){
  * Field definitions taken from DaFISAPFeedFile.pdf
  */
 function BATCH_ID_NBR(){
-    return date('YmdGis',strtotime('now'));
+    return date('YmdHis',strtotime('now'));
 }
 function FEED_NM($name){
     $out = (isset($name) && trim($name)!=='' ? str_ireplace(' ','',strtoupper($name)) : ''). str_repeat(' ',15);
@@ -518,7 +521,8 @@ function export_to_apfeed($xml_files){
                                     $success = fwrite($apfeed_file,$entry);
                                     if ($success !== FALSE) {
                                         $record_ct += 1;
-                                        $invoice_info[] = $inv_item;
+                                        $line_id = $inv_item['VEND_ASSIGN_INV_NBR']."~".$inv_item["PMT_LINE_NBR"];
+                                        if (!array_key_exists($line_id, $invoice_info)) $invoice_info[$line_id] = $inv_item;
                                     }
                                 } // loop each line
                             } // loop each line list
@@ -579,9 +583,14 @@ function scp_upload_apfeed_files($files){
             
             fwrite($log,timeStamp().": Uploading $filename to $server");
             
-            $shell_msg = shell_exec("scp -i $private_key $filepath {$user}@{$server}:");         
+            if (is_array($output)) unset($output);
             
-            fwrite($log,timeStamp().": Upload result: {$shell_msg}");
+            $success = system("scp -i $private_key $filepath {$user}@{$server}:",$shell_msg);
+            
+            $status = $success===FALSE ? 'error' : 'result';
+            
+            fwrite($log,timeStamp().": Upload {$status}: {$shell_msg}".($success!=='' && $success!==FALSE ? " :: {$success}" : "") );
+            
             $out['apfeed_files'][] = $filepath;
         } // loop foreach ftp file
             
@@ -774,10 +783,14 @@ if (!empty($xml_results['error'])){
         $ini = json_decode(file_get_contents('inc/config.inc',TRUE));
         
         // open the invoice log and read its contents int an array.
-        $invoice_log = fopen($invoice_log_path,'r+');        
-        $invoice_info = get_invoice_info($invoice_log);
-        
-        fclose($invoice_log);
+        if (file_exists($invoice_log_path)){
+            $invoice_log = fopen($invoice_log_path,'r+');        
+            $invoice_info = get_invoice_info($invoice_log);            
+            fclose($invoice_log);
+        } else {
+            $invoice_info = array();
+        }
+                
                 
         // try to convert XML files to APFEED
         $apfeed_exported = export_to_apfeed($xml_files);
@@ -789,7 +802,7 @@ if (!empty($xml_results['error'])){
             
             // re-open the log, but clear it and prep to write contents from scratch
             $invoice_log = fopen($invoice_log_path,'w');
-            fwrite($invoice_log,json_encode($invoice_info));
+            fwrite($invoice_log,json_encode($invoice_info)."\n");
             
             // log what we processed and record completion time.
             $file_ct = count($apfeed_exported);

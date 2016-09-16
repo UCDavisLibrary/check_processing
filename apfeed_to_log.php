@@ -107,7 +107,7 @@ function parse_line($line){
  *      Array of values parsed from the file $folder . '/' . $filename
  */
 function get_invoice_items($folder,$filename){
-    global $log;
+    global $log,$arrInvoiceItems;
     
     $out = array();
     
@@ -115,9 +115,13 @@ function get_invoice_items($folder,$filename){
         $toParse = fopen($folder.'/'.$filename,'r');
         while($line = fgets($toParse)){
             if (stristr($line, '*') === FALSE){
-                $out[] = parse_line($line); 
-            }
-        }
+                $parsed = parse_line($line);
+                if (is_array($parsed) && !empty($parsed)){
+                    $key = $parsed['VEND_ASSIGN_INV_NBR']."~".$parsed["PMT_LINE_NBR"];
+                    if (!array_key_exists($key, $out) && !array_key_exists($key, $arrInvoiceItems)) $out[$key] = parse_line($line); 
+                } // end if parsed is valid
+            } // end if line does not have asterisks
+        } // lop while file has more content
         return $out;
         
     } else {
@@ -143,12 +147,15 @@ $ts = str_ireplace("\n", "", timeStamp());
 
 // if we already have a check.log, just record it and report it to the screen
 if (file_exists($invoice_log_path)){
-    // the next several lines convert the file contents to array
-    // for the purposes of debugging/stepping through and examining the contents.
-    $invoice_log = fopen($invoice_log_path,'r');
-    $line = fgets($invoice_log);
-    $arrVals = json_decode($line,TRUE);
-//  foreach($arrVals as $key=>$objLineItem) $arrVals[$key] = (array)$objLineItem;
+    if (defined('DEBUG') && DEBUG===TRUE){
+        // the next several lines convert the file contents to array
+        // for the purposes of debugging/stepping through and examining the contents.
+        $invoice_log = fopen($invoice_log_path,'r');
+        $line = fgets($invoice_log);
+        $arrVals = json_decode($line,TRUE);
+        
+        foreach($arrVals as $key=>$objLineItem) $arrVals[$key] = (array)$objLineItem;
+    } // end if debugging
     
     // report the file's existence and exit.
     $msg = ">>$ts:  Invoice log already exists. Halting process conversion process. \n";
@@ -195,7 +202,7 @@ if (file_exists($invoice_log_path)){
         // if the primary array has line items, record it to check.log
         if (!empty($arrInvoiceItems)){
             $invoice_log = fopen($invoice_log_path,'w');
-            fwrite($invoice_log,json_encode($arrInvoiceItems));
+            fwrite($invoice_log,json_encode($arrInvoiceItems)."\n");
             fclose($invoice_log);
             fwrite($log,timeStamp().": Created invoice log $invoice_log_path\n");
         }
