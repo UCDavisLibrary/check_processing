@@ -17,7 +17,7 @@
 
 // Set DEBUT to TRUE for testing and debugging.
 // affects some variable settings and error output.
-defined('DEBUG') or define('DEBUG', TRUE);
+defined('DEBUG') or define('DEBUG', FALSE);
 
 date_default_timezone_set("America/Los_Angeles");
 
