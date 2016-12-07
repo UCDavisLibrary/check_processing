@@ -192,13 +192,13 @@ if (file_exists($invoice_log_path)){
                     ADDRESS_LIST=(
                         ADDRESS=(COMMUNITY=TCP.ucdavis.edu)
                                 (PROTOCOL=TCP)
-                                (Host=AFS-ODADEV1.ucdavis.edu)
+                                (Host=afs-oda3b.ucdavis.edu)
                                 (Port=1521)
                                 )
                            )
                 (
-                 CONNECT_DATA=(SID=dsstage)
-                              (GLOBAL_NAME=fis_ds_stage.ucdavis.edu)
+                 CONNECT_DATA=(SID=dsuat)
+                              (GLOBAL_NAME=fis_ds_uat.ucdavis.edu)
                  )
            )";
         $db_user_dafis = 'ucdlibrary_app';
