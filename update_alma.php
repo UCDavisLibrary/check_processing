@@ -16,7 +16,7 @@ use PDOOCI\PDO;
 require_once 'inc/class.PDOOCI.php';
 
 // relative path locations for key input/output logs
-$invoice_log_path   = './logs/invoice.log';
+$invoice_xml_path   = './xml/';
 $apfeed_path        = './apfeed';
 $alma_api_key       = 'l7xx768e97ddd72b4177a913f6b804041661';
 
@@ -42,18 +42,7 @@ function comp($a, $b){
     return strcmp($a['BATCH_ID_NBR'], $b['BATCH_ID_NBR']);
 }
 /*
- *  Parse the passed json_decode objects into array items in the primary processing array.
- *  
- *  @param $arrInvoices (By reference) primary processing array being built
- *  @param $arrLine     json_decoded array of objects, parsed from a line of invoice.log
- *  
- *  @return  N/A ... $arrInvoices is passed by reference so it can be directly modified without
- *              the need to pass anything back;
- */
-function add_items(&$arrInvoices,$arrLine){
-    foreach($arrLine as $key=>$objInvoices) $arrInvoices[] = (array) $objInvoices;
-}
-/*
+ *
  *  Try to find matching Alma record(s) via the Web APIs provided
  *  at https://developers.exlibrisgroup.com/alma
  *  
@@ -65,7 +54,10 @@ function get_alma_po_line($invoice_number){
     global $alma_api_key;
     
     //API Url
-    $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/invoices?apikey={$alma_api_key}&format=json&q=invoice_number~$invoice_number";
+    $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/';
+
+    // generate query
+    $queryParams = '?' . urlencode('q') . '=' . urlencode('invoice_number=' . $invoice_number) . '&' . urlencode('limit') . '=' . urlencode('10') . '&' . urlencode('offset') . '=' . urlencode('0') . '&' . urlencode('apikey') . '=' . urlencode($alma_api_key) . '&' . urlencode('format=json');
     
     //  Initiate curl
     $ch = curl_init();
@@ -77,7 +69,7 @@ function get_alma_po_line($invoice_number){
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     
     // Set the url
-    curl_setopt($ch, CURLOPT_URL,$url);
+    curl_setopt($ch, CURLOPT_URL, $url . $queryParams);
     
     //Set the content type to application/json
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
@@ -100,6 +92,20 @@ function get_alma_po_line($invoice_number){
         return FALSE;
     }
 }
+/* 
+ * Converts vendor_additional_code from XML to the dafis vendor_id
+ * vendor_additional_code example: 0000008563 0005
+ * the expected vendor_id: 8563-0 
+ */
+function vend_addcode_to_dafis($vend_code) {
+    list($first, $sec) = preg_split('/\s+/', $vend_code);
+    $first = preg_replace("/^0+/",'', $first);
+    $sec = $sec[1];
+    return "$first-$sec";
+}
+
+
+
 /*
  *  Push update information to Alma via the Web APIs provided
  *  at https://developers.exlibrisgroup.com/alma
@@ -110,14 +116,17 @@ function get_alma_po_line($invoice_number){
  */
 function update_alma_record($row_data){
     global $alma_api_key;
-    
+
     // get the alma record to ensure we have something to update
     $po_line = get_alma_po_line($row_data['VENDOR_INVOICE_NUM']);
+
+    var_dump($po_line);
+
     
     if ($po_line !== FALSE){
         
         //API Url
-        $url = $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/po-lines/{$po_line}?apikey={$alma_api_key}&format=json";
+        $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/po-lines/{$po_line}?apikey={$alma_api_key}&format=json";
         
         //Initiate cURL.
         $ch = curl_init($url);
@@ -150,6 +159,7 @@ function update_alma_record($row_data){
         
         //Set the content type to application/json
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
         
         // for testing ... to prevent accidentally updating something
         return TRUE;
@@ -175,19 +185,14 @@ $log = fopen('./logs/session.log','a+');
 // record the beggining of each session.
 $ts = str_ireplace("\n", "", timeStamp());
 
-// if we already have a invoice.log, just record it and report it to the screen
-if (file_exists($invoice_log_path)){
-    $invoice_log = fopen($invoice_log_path,"r");
-    while ($line = fgets($invoice_log)){
-        add_items($arrInvoices,json_decode($line,true));        
-    }    
-    
-    if (!empty($arrInvoices)){
-        // sort the invoices by batch id for faster processing
-        usort($arrInvoices,"comp");
-        
-        // initialize the connection to the finance server, so we can look for status update info.
-        $db_dafis = "(
+// look at the xml directory and look through each xml file
+foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
+    // if we already have a invoice.log, just record it and report it to the screen
+    if (file_exists($xml_file)){
+        $xml = simplexml_load_file($xml_file) or die("Error: Cannot create object");
+        if (!empty($xml)){
+            // initialize the connection to the finance server, so we can look for status update info.
+            $db_dafis = "(
                 DESCRIPTION=(
                     ADDRESS_LIST=(
                         ADDRESS=(COMMUNITY=TCP.ucdavis.edu)
@@ -200,14 +205,14 @@ if (file_exists($invoice_log_path)){
                  CONNECT_DATA=(SID=dsuat)
                               (GLOBAL_NAME=fis_ds_uat.ucdavis.edu)
                  )
-           )";
-        $db_user_dafis = 'ucdlibrary_app';
-        $db_pass_dafis = 'Pan$8562#ama';
+            )";
+            $db_user_dafis = 'ucdlibrary_app';
+            $db_pass_dafis = 'Pan$8562#ama';
         
-        $dafis_dbh = new PDOOCI\PDO( $db_dafis, $db_user_dafis, $db_pass_dafis);
+            $dafis_dbh = new PDOOCI\PDO( $db_dafis, $db_user_dafis, $db_pass_dafis);
         
-        // Query the finance server to find the current status of each invoice
-        $kfs_query = <<<EOT
+            // Query the finance server to find the current status of each invoice
+            $kfs_query = <<<EOT
                     select * from (
                         select DV.fdoc_nbr                              AS doc_num
                             , PD.dv_payee_id_nbr                        AS vendor_id
@@ -251,46 +256,50 @@ if (file_exists($invoice_log_path)){
                               on DT.doc_typ_id = DH.doc_typ_id
                           where cm_feed_cd = 'LG'
                         )
-                      where vendor_id like '%'||:vend_id||'%'  
-                      and vendor_invoice_num = :inv_nbr
+                      where vendor_id LIKE :vend_id
+                      and vendor_invoice_num LIKE :vend_num
                       order by doc_num
 EOT;
-        $statement = $dafis_dbh->prepare($kfs_query);
+            $statement = $dafis_dbh->prepare($kfs_query);
         
-        $dump_file = fopen('./logs/dump.log','w');
+            $dump_file = fopen('./logs/dump.log','w');
         
-        $last_invoice = '';
-        
-        
-        // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
-        foreach($arrInvoices as $invoice){
-            if ($invoice['VEND_ASSIGN_INV_NBR'] !== $last_invoice){
-                $last_invoice = $invoice['VEND_ASSIGN_INV_NBR'];
+            $last_invoice = '';
+            
+            // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
+            foreach($xml->invoice_list->invoice as $invoice){
+                if ($invoice->invoice_number !== $last_invoice){
+                    $last_invoice = $invoice->invoice_number;
                 
-                $inv_nbr = $invoice['VEND_ASSIGN_INV_NBR']*1;
-                $vend_id = (string)$invoice['VEND_NBR']*1;
-                $statement->execute( array(':inv_nbr' => $inv_nbr,':vend_id'=>$vend_id) );            
-                
-                // loop through result rows updating alma via the Web APIs
-                while ($row = $statement->fetch()){
-                    //update Alma via Web API
-                    $updated_alma = update_alma_record((array)$row);
-                    fwrite($dump_file,json_encode($row));
+                    $vend_name = $invoice->vendor_name;
+                    print "\n##########$vend_name";
+                    $vend_id = vend_addcode_to_dafis($invoice->vendor_additional_code);
+                    print "\n####$vend_id###$last_invoice";
+                    $statement->execute(
+                        array(':vend_id' => "$vend_id", 
+                              ':vend_num' => "$last_invoice")
+                    );            
                     
-                    // go ahead and break. We only need to update once 
-                    break;
+                    // loop through result rows updating alma via the Web APIs
+                    while ($row = $statement->fetch()){
+                        print_r($row);
+                        //update Alma via Web API
+
+                        //$updated_alma = update_alma_record((array)$row);
+                        //fwrite($dump_file,json_encode($row));
+                        
+                        // go ahead and break. We only need to update once 
+                        break;
+                    }
+                } else {
+                    $invoice['ALMA_UPDATED']=$updated_alma;
                 }
-            } else {
-                $invoice['ALMA_UPDATED']=$updated_alma;
             }
+        
+            fclose($dump_file);
+        
+            // if finance info is available, update alma via the Web API
         }
-        
-        fclose($dump_file);
-        
-        
-        
-        // if finance info is available, update alma via the Web API
-    }
-    
+    }   
 }
 ?>
