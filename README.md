@@ -70,7 +70,7 @@ All functions and errors are tracked in a session.log file, located in the logs 
 
 ### Who do I talk to? ###
 
-* Repo owner or admin:  Michael Baxter (michael@e2-photo.com)
+* Repo owner or admin: Alexander Lin (alxlin@ucdavis.edu)  
 * Other community or team contact: 
     * Project owner Dale Snapp (dfsnapp@ucdavis.edu)
     * Data analyst/mapping Lisa Spagnolo (lcspagnolo@ucdavis.edu)

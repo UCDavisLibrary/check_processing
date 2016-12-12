@@ -41,57 +41,7 @@ function timeStamp(){
 function comp($a, $b){
     return strcmp($a['BATCH_ID_NBR'], $b['BATCH_ID_NBR']);
 }
-/*
- *
- *  Try to find matching Alma record(s) via the Web APIs provided
- *  at https://developers.exlibrisgroup.com/alma
- *  
- *  @param $row_data Array of invoices and their respective fields
- *  
- *  @return boolean success to indicate if a matching record was found
- */
-function get_alma_po_line($invoice_number){
-    global $alma_api_key;
-    
-    //API Url
-    $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/';
 
-    // generate query
-    $queryParams = '?' . urlencode('q') . '=' . urlencode('invoice_number=' . $invoice_number) . '&' . urlencode('limit') . '=' . urlencode('10') . '&' . urlencode('offset') . '=' . urlencode('0') . '&' . urlencode('apikey') . '=' . urlencode($alma_api_key) . '&' . urlencode('format=json');
-    
-    //  Initiate curl
-    $ch = curl_init();
-    
-    // Disable SSL verification
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    
-    // Will return the response, if false it print the response
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    
-    // Set the url
-    curl_setopt($ch, CURLOPT_URL, $url . $queryParams);
-    
-    //Set the content type to application/json
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
-    
-    // Execute
-    $result=curl_exec($ch);
-    
-    // Closing
-    curl_close($ch);
-    
-    $arrDecoded = json_decode($result,TRUE);
-    
-    $arrInvoice = (is_array($arrDecoded) && array_key_exists('invoice', $arrDecoded) ? $arrDecoded['invoice'] : NULL);
-        
-    if (is_array($arrInvoice) && !empty($arrInvoice)){
-        $invoice_line = $arrInvoice[0]['invoice_line'][0];
-        $po_line = array_key_exists('po_line', $invoice_line) ? $invoice_line['po_line'] : FALSE;        
-        return $link == '' ? FALSE : $link;
-    }else{
-        return FALSE;
-    }
-}
 /* 
  * Converts vendor_additional_code from XML to the dafis vendor_id
  * vendor_additional_code example: 0000008563 0005
@@ -104,72 +54,14 @@ function vend_addcode_to_dafis($vend_code) {
     return "$first-$sec";
 }
 
-
-
 /*
- *  Push update information to Alma via the Web APIs provided
- *  at https://developers.exlibrisgroup.com/alma
- *
- *  @param $row_data Array of invoices and their respective fields
- *
- *  @return boolean $success to indicate if we updated properly
+ * Converts MM/DD/YYYY to YYYYMMDD
  */
-function update_alma_record($row_data){
-    global $alma_api_key;
-
-    // get the alma record to ensure we have something to update
-    $po_line = get_alma_po_line($row_data['VENDOR_INVOICE_NUM']);
-
-    var_dump($po_line);
-
-    
-    if ($po_line !== FALSE){
-        
-        //API Url
-        $url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/po-lines/{$po_line}?apikey={$alma_api_key}&format=json";
-        
-        //Initiate cURL.
-        $ch = curl_init($url);
-
-        
-        /*
-         *  Payment_status would be updated from “NOT_PAID” to “PAID”
-         *  voucher_number would come from KFS field "CHECK_NUM"
-         *  voucher_date => … "PAYMENT_ENTERED_DATE"
-         *  voucher_amount => … "PAYMENT_TOTAL_AMT"
-         */
-        $updates = array(
-            "payment_status"=>'PAID',
-            "voucher_number"=>'C10457745',
-            "voucher_date"=>'20160719',
-            "voucher_amount"=>24.14            
-        );
-                    
-        
-        //Encode the array into JSON. 
-        //(mvb ... we probably want a subset of the data, and we need the API Key)
-        $jsonDataEncoded = json_encode($updates);
-        
-        //Tell cURL that we want to send a PUT request.
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-        
-        //Attach our encoded JSON string to the POST fields.
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-        
-        //Set the content type to application/json
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-        
-        // for testing ... to prevent accidentally updating something
-        return TRUE;
-        //Execute the request
-        //$result = curl_exec($ch);
-                
-    } else {
-        return FALSE;
-    }
+function sdate_ymd($date) {
+    list($mon,$day,$year) = explode("/", $date);
+    return "$year$mon$day";   
 }
+
 /*
  *  Main process
  *
@@ -185,34 +77,32 @@ $log = fopen('./logs/session.log','a+');
 // record the beggining of each session.
 $ts = str_ireplace("\n", "", timeStamp());
 
-// look at the xml directory and look through each xml file
-foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
-    // if we already have a invoice.log, just record it and report it to the screen
-    if (file_exists($xml_file)){
-        $xml = simplexml_load_file($xml_file) or die("Error: Cannot create object");
-        if (!empty($xml)){
-            // initialize the connection to the finance server, so we can look for status update info.
-            $db_dafis = "(
-                DESCRIPTION=(
-                    ADDRESS_LIST=(
-                        ADDRESS=(COMMUNITY=TCP.ucdavis.edu)
-                                (PROTOCOL=TCP)
-                                (Host=afs-oda3b.ucdavis.edu)
-                                (Port=1521)
-                                )
-                           )
-                (
-                 CONNECT_DATA=(SID=dsuat)
-                              (GLOBAL_NAME=fis_ds_uat.ucdavis.edu)
-                 )
-            )";
-            $db_user_dafis = 'ucdlibrary_app';
-            $db_pass_dafis = 'Pan$8562#ama';
-        
-            $dafis_dbh = new PDOOCI\PDO( $db_dafis, $db_user_dafis, $db_pass_dafis);
-        
-            // Query the finance server to find the current status of each invoice
-            $kfs_query = <<<EOT
+// xml generated to be ingested by Alma 
+$xml_ERP = new SimpleXMLElement("<payment_comfirmation_data><invoice_list></invoice_list></payment_comfirmation_data>");
+
+// Dafis Oracle SQL Information 
+// TODO put this in a better place
+$db_dafis = "(
+    DESCRIPTION=(
+        ADDRESS_LIST=(
+            ADDRESS=(COMMUNITY=TCP.ucdavis.edu)
+            (PROTOCOL=TCP)
+            (Host=afs-oda3b.ucdavis.edu)
+            (Port=1521)
+        )
+    )
+    (
+        CONNECT_DATA=(SID=dsuat)
+        (GLOBAL_NAME=fis_ds_uat.ucdavis.edu)
+    )
+)";
+$db_user_dafis = 'ucdlibrary_app';
+$db_pass_dafis = 'Pan$8562#ama';
+
+$dafis_dbh = new PDOOCI\PDO( $db_dafis, $db_user_dafis, $db_pass_dafis);
+
+// Query the finance server to find the current status of each invoice
+$kfs_query = <<<EOT
                     select * from (
                         select DV.fdoc_nbr                              AS doc_num
                             , PD.dv_payee_id_nbr                        AS vendor_id
@@ -256,49 +146,67 @@ foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
                               on DT.doc_typ_id = DH.doc_typ_id
                           where cm_feed_cd = 'LG'
                         )
-                      where vendor_id LIKE :vend_id
-                      and vendor_invoice_num LIKE :vend_num
+                      where vendor_invoice_num LIKE :vend_num
                       order by doc_num
 EOT;
+
+// look at the xml directory and look through each xml file
+foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
+    // Checks if this input xml is generated or if the handled xml is already generated)
+    $erp_input_xml = "input/" . basename($xml_file,".xml") . '.input.xml';
+    $erp_handle_file = "input/" . basename($erp_input_xml, ".xml") . '.handled';
+
+    if (!file_exists($xml_file)) {
+        print "Skipped ($xml_file): File does not exist.\n";
+    } elseif (file_exists($erp_input_xml)){
+        print "Skipped ($xml_file): ERP input xml already generated.\n";
+    } elseif (file_exists($erp_handle_file)) {
+        print "Skipped ($xml_file): ERP has already handled this xml.\n";
+    } else { // haven't processed this xml yet.
+        $xml = simplexml_load_file($xml_file) or die("Error: Cannot create object");
+        if (!empty($xml)){
+            // initialize the connection to the finance server, so we can look for status update info.
+
             $statement = $dafis_dbh->prepare($kfs_query);
         
-            $dump_file = fopen('./logs/dump.log','w');
-        
             $last_invoice = '';
-            
             // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
             foreach($xml->invoice_list->invoice as $invoice){
                 if ($invoice->invoice_number !== $last_invoice){
                     $last_invoice = $invoice->invoice_number;
-                
+
+                    //Add xml info needed for ERP
+                    $xml_invoice = $xml_ERP->addChild('invoice');
+                    $xml_invoice->addChild('invoice_number', $invoice->invoice_number);
+                    $xml_invoice->addChild('unique_identifier', $invoice->unique_identifier);
+                    $xml_invoice->addChild('invoice_date', sdate_ymd($invoice->invoice_date));
+                    $xml_invoice->addChild('vendor_code', $invoice->vendor_code);
+
                     $vend_name = $invoice->vendor_name;
-                    print "\n##########$vend_name";
                     $vend_id = vend_addcode_to_dafis($invoice->vendor_additional_code);
-                    print "\n####$vend_id###$last_invoice";
                     $statement->execute(
-                        array(':vend_id' => "$vend_id", 
-                              ':vend_num' => "$last_invoice")
+                        array(':vend_num' => "$last_invoice")
                     );            
-                    
                     // loop through result rows updating alma via the Web APIs
                     while ($row = $statement->fetch()){
-                        print_r($row);
-                        //update Alma via Web API
+                        //Update Payment information
+                        $xml_invoice->addChild('payment_status', "PAID");
+                        $xml_invoice->addChild('payment_voucher_date', $row["PAYMENT_ENTERED_DATE"]);
+                        $xml_invoice->addChild('payment_voucher_number', $row["CHECK_NUM"]);
+                        $amt = $xml_invoice->addChild('voucher_amount');
+                        $amt->addChild('currency', 'USD');
+                        $amt->addChild('sum', $row['PAYMENT_TOTAL_AMT']);
 
-                        //$updated_alma = update_alma_record((array)$row);
-                        //fwrite($dump_file,json_encode($row));
-                        
                         // go ahead and break. We only need to update once 
                         break;
                     }
-                } else {
-                    $invoice['ALMA_UPDATED']=$updated_alma;
                 }
             }
-        
-            fclose($dump_file);
-        
-            // if finance info is available, update alma via the Web API
+            // Writes the ERP input xml to input/ 
+            $xml_ERP->asXML($erp_input_xml);
+            print "Processed ($xml_file): ERP input XML generated.\n";
+        } else {
+            print "Skipped ($xml_file): Empty XML.\n";
         }
     }   
 }
