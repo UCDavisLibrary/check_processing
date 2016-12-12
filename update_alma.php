@@ -78,7 +78,9 @@ $log = fopen('./logs/session.log','a+');
 $ts = str_ireplace("\n", "", timeStamp());
 
 // xml generated to be ingested by Alma 
-$xml_ERP = new SimpleXMLElement("<payment_comfirmation_data><invoice_list></invoice_list></payment_comfirmation_data>");
+$xml_ERP = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><payment_confirmation_data></payment_confirmation_data>');
+$xml_ERP->addAttribute("xmlns", "http://com/exlibris/repository/acq/xmlbeans");
+$xml_ERP_invoice_list = $xml_ERP->addChild('invoice_list');
 
 // Dafis Oracle SQL Information 
 // TODO put this in a better place
@@ -169,14 +171,14 @@ foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
 
             $statement = $dafis_dbh->prepare($kfs_query);
         
-            $last_invoice = '';
+            $last_invoice = '';<payment_status>PAID</payment_status><payment_voucher_date>20161212</payment_voucher_date><payment_voucher_number>C101010101</payment_voucher_number><voucher_amount><currency>USD</currency><sum>144.22</sum></voucher_amount>
             // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
             foreach($xml->invoice_list->invoice as $invoice){
                 if ($invoice->invoice_number !== $last_invoice){
                     $last_invoice = $invoice->invoice_number;
 
                     //Add xml info needed for ERP
-                    $xml_invoice = $xml_ERP->addChild('invoice');
+                    $xml_invoice = $xml_ERP_invoice_list->addChild('invoice');
                     $xml_invoice->addChild('invoice_number', $invoice->invoice_number);
                     $xml_invoice->addChild('unique_identifier', $invoice->unique_identifier);
                     $xml_invoice->addChild('invoice_date', sdate_ymd($invoice->invoice_date));
