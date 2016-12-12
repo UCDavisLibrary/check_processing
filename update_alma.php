@@ -171,7 +171,7 @@ foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
 
             $statement = $dafis_dbh->prepare($kfs_query);
         
-            $last_invoice = '';<payment_status>PAID</payment_status><payment_voucher_date>20161212</payment_voucher_date><payment_voucher_number>C101010101</payment_voucher_number><voucher_amount><currency>USD</currency><sum>144.22</sum></voucher_amount>
+            $last_invoice = '';
             // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
             foreach($xml->invoice_list->invoice as $invoice){
                 if ($invoice->invoice_number !== $last_invoice){
