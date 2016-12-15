@@ -21,15 +21,6 @@ $apfeed_path        = './apfeed';
 $alma_api_key       = 'l7xx768e97ddd72b4177a913f6b804041661';
 
 /*
- *  Provides a formatted current time stamp for inclusion
- *  in the log file.
- *  
- *  @return Formatted date/time string bracketed by [];
- */
-function timeStamp(){
-    return "\n".'['.date("m/d/Y g:i:s a",strtotime('now')).']';
-}
-/*
  *  Callback for usort, to sort invoice info by key field
  *      
  *  @param $a Array value for comparison against $b
@@ -55,12 +46,81 @@ function vend_addcode_to_dafis($vend_code) {
 }
 
 /*
- * Converts MM/DD/YYYY to YYYYMMDD
+ * Converts MM-DD-YYYY to YYYYMMDD
  */
-function sdate_ymd($date) {
+function sdate_ymd($date) { 
     list($mon,$day,$year) = explode("/", $date);
     return "$year$mon$day";   
 }
+/*
+ * Uses CURL to access alma REST api
+ * https://developers.exlibrisgroup.com/alma/apis/acq/GET/gwPcGly021r2HStoodvfjbXCmeKQd8Gt3JPdiJpJhUA=/d5b14609-b590-470e-baba-9944682f8c7e
+ */ 
+
+function query_alma_invoice($offset = 0) {
+    $ch = curl_init();
+    $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/';
+    $queryParams = '?' . urlencode('q') . '=' . urlencode('status~ready_to_be_paid') 
+        . '&' . urlencode('apikey') . '=' . urlencode('l7xx768e97ddd72b4177a913f6b804041661')
+        . '&' . urlencode('format') . '='. urlencode('json')
+        . '&' . urlencode('limit') . '=' . urlencode('100')
+        . '&' . urlencode('offset') . '=' . urlencode($offset); 
+    curl_setopt($ch, CURLOPT_URL, $url . $queryParams);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_HEADER, FALSE);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    return($response);
+}
+/* 
+ * Grabs all waiting for payment invoices from alma
+ * Done in parallel using curl multi
+ * Can't be done using one curlc call because of alma 100 invoice limitations
+ * Returns an array
+ */
+
+function get_waiting_invoices() {
+    // Gets the initial query to get total number of invoices
+    $respond_json = json_decode(query_alma_invoice());
+    $array_out = $respond_json->invoice;
+
+    // creates each seperation for parallel 
+    $nodes = range(100, $respond_json->total_record_count, 100);
+    $node_count = count($nodes);
+
+    $curl_arr = array();
+    $master = curl_multi_init();
+
+    for($i = 0; $i < $node_count; $i++)
+    {
+        $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/?' . urlencode('q') . '=' . urlencode('status~ready_to_be_paid') 
+        . '&' . urlencode('apikey') . '=' . urlencode('l7xx768e97ddd72b4177a913f6b804041661')
+        . '&' . urlencode('format') . '='. urlencode('json')
+        . '&' . urlencode('limit') . '=' . urlencode('100')
+        . '&' . urlencode('offset') . '=' . urlencode($nodes[$i]);
+        $curl_arr[$i] = curl_init($url);
+        curl_setopt($curl_arr[$i], CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_arr[$i], CURLOPT_HEADER, FALSE);
+        curl_setopt($curl_arr[$i], CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_multi_add_handle($master, $curl_arr[$i]);
+    }
+
+    do {
+        curl_multi_exec($master,$running);
+    } while($running > 0);
+
+    // Combines each output into json and merges the invoice attribute together
+    for($i = 0; $i < $node_count; $i++)
+    {
+        $curl_json = json_decode(curl_multi_getcontent  ( $curl_arr[$i]  ));
+        $array_out = array_merge($array_out, $curl_json->invoice);
+    }
+
+    return $array_out;
+}
+
 
 /*
  *  Main process
@@ -73,9 +133,6 @@ function sdate_ymd($date) {
 
 // open the log file for output from the last line
 $log = fopen('./logs/session.log','a+');
-
-// record the beggining of each session.
-$ts = str_ireplace("\n", "", timeStamp());
 
 // xml generated to be ingested by Alma 
 $xml_ERP = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><payment_confirmation_data></payment_confirmation_data>');
@@ -152,64 +209,45 @@ $kfs_query = <<<EOT
                       order by doc_num
 EOT;
 
+$statement = $dafis_dbh->prepare($kfs_query);
+
+$invoice_array = get_waiting_invoices();
+
+$count = 0;
 // look at the xml directory and look through each xml file
-foreach (glob($invoice_xml_path . '*.xml') as $xml_file) {
-    // Checks if this input xml is generated or if the handled xml is already generated)
-    $erp_input_xml = "input/" . basename($xml_file,".xml") . '.input.xml';
-    $erp_handle_file = "input/" . basename($erp_input_xml, ".xml") . '.handled';
+foreach ($invoice_array as $invoice) {
+    $statement->execute(
+        array(':vend_num' => "$invoice->number")
+    );  
+    if($row = $statement->fetch()){
+        //Add xml info needed for ERP
+        $xml_invoice = $xml_ERP_invoice_list->addChild('invoice');
+        $xml_invoice->addChild('invoice_number', $invoice->number);
+        $xml_invoice->addChild('unique_identifier', $invoice->id);
+        $xml_invoice->addChild('invoice_date',$invoice->invoice_date);
+        $xml_invoice->addChild('vendor_code', $invoice->vendor);
 
-    if (!file_exists($xml_file)) {
-        print "Skipped ($xml_file): File does not exist.\n";
-    } elseif (file_exists($erp_input_xml)){
-        print "Skipped ($xml_file): ERP input xml already generated.\n";
-    } elseif (file_exists($erp_handle_file)) {
-        print "Skipped ($xml_file): ERP has already handled this xml.\n";
-    } else { // haven't processed this xml yet.
-        $xml = simplexml_load_file($xml_file) or die("Error: Cannot create object");
-        if (!empty($xml)){
-            // initialize the connection to the finance server, so we can look for status update info.
+        //$vend_id = vend_addcode_to_dafis($invoice->vendor_additional_code);
 
-            $statement = $dafis_dbh->prepare($kfs_query);
+        // loop through result rows updating alma via the Web APIs
+        //Update Payment information
+        $xml_invoice->addChild('payment_status', "PAID");
+        $xml_invoice->addChild('payment_voucher_date', $row["PAYMENT_ENTERED_DATE"]);
+        $xml_invoice->addChild('payment_voucher_number', $row["CHECK_NUM"]);
+        $amt = $xml_invoice->addChild('voucher_amount');
+        $amt->addChild('currency', 'USD');
+        $amt->addChild('sum', $row['PAYMENT_TOTAL_AMT']);
         
-            $last_invoice = '';
-            // loop through invoice data using vendor_id and vendor_invoice_num to invoice on status
-            foreach($xml->invoice_list->invoice as $invoice){
-                if ($invoice->invoice_number !== $last_invoice){
-                    $last_invoice = $invoice->invoice_number;
-
-                    //Add xml info needed for ERP
-                    $xml_invoice = $xml_ERP_invoice_list->addChild('invoice');
-                    $xml_invoice->addChild('invoice_number', $invoice->invoice_number);
-                    $xml_invoice->addChild('unique_identifier', $invoice->unique_identifier);
-                    $xml_invoice->addChild('invoice_date', sdate_ymd($invoice->invoice_date));
-                    $xml_invoice->addChild('vendor_code', $invoice->vendor_code);
-
-                    $vend_name = $invoice->vendor_name;
-                    $vend_id = vend_addcode_to_dafis($invoice->vendor_additional_code);
-                    $statement->execute(
-                        array(':vend_num' => "$last_invoice")
-                    );            
-                    // loop through result rows updating alma via the Web APIs
-                    while ($row = $statement->fetch()){
-                        //Update Payment information
-                        $xml_invoice->addChild('payment_status', "PAID");
-                        $xml_invoice->addChild('payment_voucher_date', $row["PAYMENT_ENTERED_DATE"]);
-                        $xml_invoice->addChild('payment_voucher_number', $row["CHECK_NUM"]);
-                        $amt = $xml_invoice->addChild('voucher_amount');
-                        $amt->addChild('currency', 'USD');
-                        $amt->addChild('sum', $row['PAYMENT_TOTAL_AMT']);
-
-                        // go ahead and break. We only need to update once 
-                        break;
-                    }
-                }
-            }
-            // Writes the ERP input xml to input/ 
-            $xml_ERP->asXML($erp_input_xml);
-            print "Processed ($xml_file): ERP input XML generated.\n";
-        } else {
-            print "Skipped ($xml_file): Empty XML.\n";
-        }
-    }   
+        $count++;
+    }
+}
+print "Total invoices in \"Waiting for payment\": " . count($invoice_array) . "\n";
+print "Total invoices found in FISDIS: $count\n"; 
+if ($count > 0) {
+    // Writes the ERP input xml to input/ 
+    $xml_ERP->asXML("input/" . time() .  '.input.xml');
+    print "Processed : ERP input XML generated.\n";
+} else {
+    print "No invoices needed to be updated.\n";
 }
 ?>
