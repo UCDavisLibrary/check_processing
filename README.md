@@ -4,34 +4,14 @@ This application was commissioned by Dale Snapp, of the UC Davis Library IT.  It
 
 The process makes a local working copy of the XML file in its "xml" folder, to ensure the original file remains unmolested.
 
-The apfeed output file is stored in the "apfeed" folder, and log files are stored in the "logs" folder.
-
-### Update: 9/15/2016 ###
-
-James reported an error with the apfeed header causing a file to be rejected.
-
-* Updated the BATCH_ID_NBR function to use leading zeroes for all date/time values.
-
-### Update: 8/31/2016 ###
-
-Lisa sent a new XML input file and errors that had been generated.  The following updates were applied:
-
-* Updated xml_to_apfeed.php to account for the variance in XML data found in the new input file.
-	* All functions that received input values from the XML input file were adjusted to account for potentially missing data.
-	* All items that relied on vendor_FinancialSys_Code were updated to use vendor_additional_code instead. This value appears consistently in both input files, and matches values sometimes found in vendor_FinancialSys_Code.
-	* GOODS_RECEIVED_DT updated to use notList->note->owneredEntity when notelist is available. Otherwise, directly accessed owneredEntity (lines 481-485)
-
-### Update: 8/9/2016 ###
-
-This new version creates an additional log file "invoice.log" to track apfeed output content so we can use it to check with finance and find our records.  That, in turn, will allow us to update the Alma records when checks have been cut. 
-
 ### What is this repository for? ###
 
 * Import an XML file from the Alma server
 * Translate the data to a new space delimited text file.
 * SCP Upload the resultant text file to the finance server.
-* Programmer: Michael Baxter
-* version: 1.2
+* Developer: Alexander Lin
+* Original Author: Michael Baxter
+* version: 2.0
 
 ### Data and definitions ###
 

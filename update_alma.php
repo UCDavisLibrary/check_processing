@@ -15,10 +15,14 @@
 use PDOOCI\PDO;
 require_once 'inc/class.PDOOCI.php';
 
+$time = time();
 // relative path locations for key input/output logs
 $invoice_xml_path   = './xml/';
 $apfeed_path        = './apfeed';
 $alma_api_key       = 'l7xx768e97ddd72b4177a913f6b804041661';
+$log_file           = "./logs/update_alma.$time.log";
+$log = fopen($log_file, "w") or die("Unable to open file($log_file)\n");
+
 
 /*
  *  Callback for usort, to sort invoice info by key field
@@ -52,11 +56,12 @@ function sdate_ymd($date) {
     list($mon,$day,$year) = explode("/", $date);
     return "$year$mon$day";   
 }
+
+
 /*
  * Uses CURL to access alma REST api
  * https://developers.exlibrisgroup.com/alma/apis/acq/GET/gwPcGly021r2HStoodvfjbXCmeKQd8Gt3JPdiJpJhUA=/d5b14609-b590-470e-baba-9944682f8c7e
  */ 
-
 function query_alma_invoice($offset = 0) {
     $ch = curl_init();
     $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/';
@@ -118,9 +123,17 @@ function get_waiting_invoices() {
         $array_out = array_merge($array_out, $curl_json->invoice);
     }
 
-    return $array_out;
-}
+    // Check that we are only getting invoices which are NOT PAID
+    foreach ($array_out as $key => $invoice) {
+        if(strcmp($invoice->payment->payment_status->value, "NOT_PAID") != 0) {
+            fwrite($log,"$invoice->number payment status is PAID: Skipping invoice\n");
+            unset($array_out[$key]);
+        }
+    }
 
+    // fix indexes if removed
+    return array_values($array_out);
+}
 
 /*
  *  Main process
@@ -131,13 +144,15 @@ function get_waiting_invoices() {
  *      future processing by update_alma.php.
  */
 
-// open the log file for output from the last line
-$log = fopen('./logs/session.log','a+');
-
 // xml generated to be ingested by Alma 
 $xml_ERP = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><payment_confirmation_data></payment_confirmation_data>');
 $xml_ERP->addAttribute("xmlns", "http://com/exlibris/repository/acq/xmlbeans");
 $xml_ERP_invoice_list = $xml_ERP->addChild('invoice_list');
+
+// Get invoices from Alma which are waiting for payment
+$invoice_array = get_waiting_invoices();
+// Get an array of just the id numbers
+$invoice_nums = array_map(function($e){ return $e->number;}, $invoice_array);
 
 // Dafis Oracle SQL Information 
 // TODO put this in a better place
@@ -146,21 +161,22 @@ $db_dafis = "(
         ADDRESS_LIST=(
             ADDRESS=(COMMUNITY=TCP.ucdavis.edu)
             (PROTOCOL=TCP)
-            (Host=afs-oda3b.ucdavis.edu)
+            (Host=fis-dss.ucdavis.edu)
             (Port=1521)
         )
     )
     (
-        CONNECT_DATA=(SID=dsuat)
-        (GLOBAL_NAME=fis_ds_uat.ucdavis.edu)
+        CONNECT_DATA=(SID=dsprod)
+        (GLOBAL_NAME=fis_ds_prod.ucdavis.edu)
     )
 )";
 $db_user_dafis = 'ucdlibrary_app';
 $db_pass_dafis = 'Pan$8562#ama';
 
 $dafis_dbh = new PDOOCI\PDO( $db_dafis, $db_user_dafis, $db_pass_dafis);
-
 // Query the finance server to find the current status of each invoice
+// Creates a bunch of ?s so values can be bound
+$in_query = implode(',', array_fill(0, count($invoice_nums), '?'));
 $kfs_query = <<<EOT
                     select * from (
                         select DV.fdoc_nbr                              AS doc_num
@@ -205,27 +221,44 @@ $kfs_query = <<<EOT
                               on DT.doc_typ_id = DH.doc_typ_id
                           where cm_feed_cd = 'LG'
                         )
-                      where vendor_invoice_num LIKE :vend_num
+                      where vendor_invoice_num IN($in_query)
                       order by doc_num
 EOT;
 
 $statement = $dafis_dbh->prepare($kfs_query);
+// Acutally do the bind
+foreach ($invoice_nums as $k => $id) $statement->bindValue(($k+1), $id);
+$statement->execute();  
+    
+$pdo_array = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-$invoice_array = get_waiting_invoices();
+// Remap array to hash key the invoice number
+foreach ($pdo_array as $key =>$pdo){
+    // Removes any duplicate invoice numbers
+    if( isset($pdo_array[$pdo["VENDOR_INVOICE_NUM"]]) ){
+        fwrite($log,"Multiple invoice numbers detected: " . $pdo["VENDOR_INVOICE_NUM"] . ": Skipping invoice\n");
+        unset($pdo_array[$pdo["VENDOR_INVOICE_NUM"]]);
+    } else {
+        $pdo_array[$pdo["VENDOR_INVOICE_NUM"]] = $pdo;
+    }
+    unset($pdo_array[$key]);
+}
 
 $count = 0;
 // look at the xml directory and look through each xml file
 foreach ($invoice_array as $invoice) {
-    $statement->execute(
-        array(':vend_num' => "$invoice->number")
-    );  
-    if($row = $statement->fetch()){
-        //Add xml info needed for ERP
+    if($row = $pdo_array[$invoice->number]){
+        if( floatval($row["PAYMENT_TOTAL_AMT"]) != floatval($invoice->total_amount)){
+            fwrite($log, "Warning invoice(" . $invoice->number . "): Payment total from KFS doesn't match invoice total amount! ". $row["PAYMENT_TOTAL_AMT"] . " != " . $invoice->total_amount . "\n");  
+        }
+
+        // Add xml info needed for ERP
         $xml_invoice = $xml_ERP_invoice_list->addChild('invoice');
         $xml_invoice->addChild('invoice_number', $invoice->number);
         $xml_invoice->addChild('unique_identifier', $invoice->id);
-        $xml_invoice->addChild('invoice_date',$invoice->invoice_date);
-        $xml_invoice->addChild('vendor_code', $invoice->vendor);
+        // Formats date correctly, removing the random Z at the end
+        $xml_invoice->addChild('invoice_date',preg_replace('/(\d+)-(\d+)-(\d+).*/', '${1}${2}${3}', $invoice->invoice_date));
+        $xml_invoice->addChild('vendor_code', htmlspecialchars($invoice->vendor->value));
 
         //$vend_id = vend_addcode_to_dafis($invoice->vendor_additional_code);
 
@@ -241,13 +274,17 @@ foreach ($invoice_array as $invoice) {
         $count++;
     }
 }
-print "Total invoices in \"Waiting for payment\": " . count($invoice_array) . "\n";
-print "Total invoices found in FISDIS: $count\n"; 
+fwrite($log, "Total invoices in \"Waiting for payment\": " . count($invoice_array) . "\n");
+fwrite($log, "Total invoices found in FISDIS: $count\n"); 
 if ($count > 0) {
     // Writes the ERP input xml to input/ 
-    $xml_ERP->asXML("input/" . time() .  '.input.xml');
-    print "Processed : ERP input XML generated.\n";
+    $out_file =  "input/$time.input.xml";
+    $dom = dom_import_simplexml($xml_ERP)->ownerDocument;
+    $dom->formatOutput = true;
+    $dom->save($out_file);
+    fwrite($log, "Processed : ERP input XML generated ($out_file)");
 } else {
-    print "No invoices needed to be updated.\n";
+    fwrite($log, "No invoices needed to be updated.\n");
 }
+fclose($log);
 ?>
