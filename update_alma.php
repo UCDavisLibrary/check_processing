@@ -15,12 +15,15 @@
 use PDOOCI\PDO;
 require_once 'inc/class.PDOOCI.php';
 
+// Constants needed for script
 $time = time();
+$cwd = getcwd();
+
 // relative path locations for key input/output logs
-$invoice_xml_path   = './xml/';
-$apfeed_path        = './apfeed';
+$invoice_xml_path   = "$cwd/xml/";
+$apfeed_path        = "$cwd/apfeed";
 $alma_api_key       = 'l7xx768e97ddd72b4177a913f6b804041661';
-$log_file           = "./logs/update_alma.$time.log";
+$log_file           = "$cwd/logs/update_alma.$time.log";
 $log = fopen($log_file, "w") or die("Unable to open file($log_file)\n");
 
 
@@ -91,38 +94,40 @@ function get_waiting_invoices() {
     $respond_json = json_decode(query_alma_invoice());
     $array_out = $respond_json->invoice;
 
-    // creates each seperation for parallel 
-    $nodes = range(100, $respond_json->total_record_count, 100);
-    $node_count = count($nodes);
+    // Do more queries if total record is greater than 100
+    if ($respond_json->total_record_count > 100) {
+        // creates each seperation for parallel 
+        $nodes = range(100, $respond_json->total_record_count, 100);
+        $node_count = count($nodes);
 
-    $curl_arr = array();
-    $master = curl_multi_init();
+        $curl_arr = array();
+        $master = curl_multi_init();
 
-    for($i = 0; $i < $node_count; $i++)
-    {
-        $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/?' . urlencode('q') . '=' . urlencode('status~ready_to_be_paid') 
-        . '&' . urlencode('apikey') . '=' . urlencode('l7xx768e97ddd72b4177a913f6b804041661')
-        . '&' . urlencode('format') . '='. urlencode('json')
-        . '&' . urlencode('limit') . '=' . urlencode('100')
-        . '&' . urlencode('offset') . '=' . urlencode($nodes[$i]);
-        $curl_arr[$i] = curl_init($url);
-        curl_setopt($curl_arr[$i], CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl_arr[$i], CURLOPT_HEADER, FALSE);
-        curl_setopt($curl_arr[$i], CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_multi_add_handle($master, $curl_arr[$i]);
+        for($i = 0; $i < $node_count; $i++)
+        {
+            $url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/?' . urlencode('q') . '=' . urlencode('status~ready_to_be_paid') 
+                . '&' . urlencode('apikey') . '=' . urlencode('l7xx768e97ddd72b4177a913f6b804041661')
+                . '&' . urlencode('format') . '='. urlencode('json')
+                . '&' . urlencode('limit') . '=' . urlencode('100')
+                . '&' . urlencode('offset') . '=' . urlencode($nodes[$i]);
+            $curl_arr[$i] = curl_init($url);
+            curl_setopt($curl_arr[$i], CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl_arr[$i], CURLOPT_HEADER, FALSE);
+            curl_setopt($curl_arr[$i], CURLOPT_CUSTOMREQUEST, 'GET');
+            curl_multi_add_handle($master, $curl_arr[$i]);
+        }
+
+        do {
+            curl_multi_exec($master,$running);
+        } while($running > 0);
+
+        // Combines each output into json and merges the invoice attribute together
+        for($i = 0; $i < $node_count; $i++)
+        {
+            $curl_json = json_decode(curl_multi_getcontent  ( $curl_arr[$i]  ));
+            $array_out = array_merge($array_out, $curl_json->invoice);
+        }
     }
-
-    do {
-        curl_multi_exec($master,$running);
-    } while($running > 0);
-
-    // Combines each output into json and merges the invoice attribute together
-    for($i = 0; $i < $node_count; $i++)
-    {
-        $curl_json = json_decode(curl_multi_getcontent  ( $curl_arr[$i]  ));
-        $array_out = array_merge($array_out, $curl_json->invoice);
-    }
-
     // Check that we are only getting invoices which are NOT PAID
     foreach ($array_out as $key => $invoice) {
         if(strcmp($invoice->payment->payment_status->value, "NOT_PAID") != 0) {
@@ -286,5 +291,14 @@ if ($count > 0) {
 } else {
     fwrite($log, "No invoices needed to be updated.\n");
 }
+
 fclose($log);
+
+// Create a symlink to the newest log
+
+$latest_log = "$cwd/logs/update_alma.latest.log";
+if(is_link($latest_log)) {
+    unlink($latest_log);
+}
+symlink($log_file, $latest_log);
 ?>
