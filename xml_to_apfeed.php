@@ -56,7 +56,7 @@ if (SCP_OR_FTP == "FTP") {
         $local_folder = '/home/almadafis/';
     }
     $scp_out = array(
-        "server" => "fis-depot-test.ucdavis.edu",
+        "server" => "fis-depot.ucdavis.edu",
         "user" => "genlibap",
         "private_key" => "inc/OpenSSH_rsa_4096",
         "public_key" => "inc/OpenSSH_rsa_4096.pub",
