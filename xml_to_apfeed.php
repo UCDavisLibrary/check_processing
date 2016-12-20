@@ -172,7 +172,10 @@ function SCHEDULED_PMT_DT($dt_str){
 function PMT_NON_CHECK_IND(){
     return 'N';
 }
-function ATTACHMENT_REQ_IND(){
+function ATTACHMENT_REQ_IND($note_list){
+    if($note_list->note->content == "ATTACHMENT") {
+        return 'Y';
+    }
     return 'N';
 }
 function PMT_LINE_NBR($line_number){
@@ -500,7 +503,7 @@ function export_to_apfeed($xml_files){
                                     $inv_item['DISC_TERM_CD']            = DISC_TERM_CD();
                                     $inv_item['SCHEDULED_PMT_DT']        = SCHEDULED_PMT_DT($header_fields['BATCH_ID_NBR']);
                                     $inv_item['PMT_NON_CHECK_IND']       = PMT_NON_CHECK_IND();
-                                    $inv_item['ATTACHMENT_REQ_IND']      = ATTACHMENT_REQ_IND();                            
+                                    $inv_item['ATTACHMENT_REQ_IND']      = ATTACHMENT_REQ_IND($invoice->noteList);
                                     $inv_item['PMT_LINE_NBR']            = PMT_LINE_NBR($line->line_number);
                                     $inv_item['FIN_COA_CD']              = FIN_COA_CD('3');
                                     $inv_item['ACCOUNT_NBR']             = ACCOUNT_NBR($line->fund_info_list->fund_info->external_id);
