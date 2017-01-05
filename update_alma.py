@@ -5,19 +5,21 @@
 # Queries Alma to find invoices that are waiting for payment
 # Queries KFS to determine if those invoices are paid
 
+import argparse
 import ConfigParser
 import cx_Oracle
 import json
+import logging
+import os
 import re
-import argparse
 import time
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
+from lib2to3.fixer_util import String
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
-from lib2to3.fixer_util import String
 
 config = ConfigParser.ConfigParser()
 config.readfp(open('config.cfg'))
@@ -95,14 +97,14 @@ def get_waiting_invoices(q):
             if error is None:
                 invoices.extend(ret['invoice'])
             else:
-                print("error fetching: %s" % (error))     
+                logging.error("error fetching: %s" % (error))     
     
     # Generates a list of ids along with remove any that don't have the current payment status
     nums = []
     for invoice in invoices[:]:
         nums.append(invoice['number'])
         if invoice['payment']['payment_status']['value'] != "NOT_PAID":
-            print("Invoice %s payment status is not 'NOT_PAID'" % (invoice['number'])) 
+            logging.warn("Invoice %s payment status is not 'NOT_PAID'" % (invoice['number'])) 
             invoices.remove(invoice)       
     
     # Remap list to a dictionary using id as key
@@ -121,7 +123,7 @@ def kfs_query(ids):
         dsn_tns = cx_Oracle.makedsn(config.get("oracle","server"), 1521, 'dsprod')
         con = cx_Oracle.connect(config.get("oracle","username"),config.get("oracle","password"),dsn_tns)
     except cx_Oracle.DatabaseError, exception:
-        print('Failed to connect to %s\n' %(config.get("oracle","server")))
+        logging.error('Failed to connect to %s\n' %(config.get("oracle","server")))
         exit (1)
     cur = con.cursor()
     q_str = ','.join("'" + item + "'" for item in ids)
@@ -176,7 +178,7 @@ def kfs_query(ids):
     if cur.execute(query):
         for doc_num, vendor_id, vendor_name, num, check_num, pay_amt, pay_date, doc_type in cur:
             if num in kfs_inv:
-                print("Multiple invoice numbers detected: %s: Skipping invoice" % num)
+                logging.warn("Multiple invoice numbers detected: %s: Skipping invoice" % num)
                 kfs_inv.pop(num)
             else:
                 kfs_inv[num] = {'doc_num': doc_num,
@@ -187,7 +189,7 @@ def kfs_query(ids):
                                'pay_date': pay_date,
                                }
     else:
-        print "KFS Query Failed"
+        logging.error("KFS Query Failed")
     con.close()
 
     return kfs_inv
@@ -196,30 +198,56 @@ if __name__ == "__main__":
     # Build XML
     erp = erp_xml()
     
+    # Constants
+    mytime = int(time.time())
+    cwd = os.getcwd()
+    log_dir = os.path.join(cwd,"logs")
+    latest_log = os.path.join(log_dir, "update_alma.latest.log")
+
     # Read in Command line Arguments
     parser = argparse.ArgumentParser(description='KFS to Alma Invoice Updater')
     parser.add_argument('-o', '--output-file',
-                    default="update_alma_%d.input.xml" % int(time.time()),
+                    default="update_alma_%d.input.xml" % mytime,
                     help='output file name (default: update_alma_(time).input.xml)')
     parser.add_argument('-q', '--query',
-                        type=String,
                         default=None,
                         help='custom query for Alma RESTful API'
                         )
+    parser.add_argument('-l', '--log-file',
+                        default="update_alma.%d.log" % mytime,
+                        help='logfile name (default: update_alma.<time>.log)')
+    parser.add_argument('--log-level',
+                        default='INFO',
+                        help='log level of written log (default: INFO) Possible [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
     args = parser.parse_args()
     
+    # Create and setup logging
+    if not os.path.isdir(log_dir):
+        os.mkdir(log_dir)
+    log_file_path = os.path.join(log_dir, args.log_file)
+
+    numeric_level = getattr(logging, args.log_level.upper(),None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log_level)
+    logging.basicConfig(filename=log_file_path,
+                        level=numeric_level)
+
     # Get Alma invoices
     invoices, nums = get_waiting_invoices(args.query)
     
     # Query KFS Oracle DB
     for inv_num, kfs_inv in sorted(kfs_query(nums).iteritems()):
         if kfs_inv['pay_amt'] != invoices[inv_num]['total_amount']:
-            print("Invoice(%s) payment record doesn't match KFS (%s != %s)" % (inv_num,kfs_inv['pay_amt'], invoices[inv_num]['total_amount'] ))
+            logging.warn("Invoice(%s) payment record doesn't match KFS (%s != %s)" % (inv_num,kfs_inv['pay_amt'], invoices[inv_num]['total_amount'] ))
         erp.add_paid_invoice(inv_num, invoices[inv_num], kfs_inv)
     
     if erp.count > 0:
         with open(args.output_file, 'w') as xml_file:
             xml_file.write(erp.tostring())
     else:
-        print("Nothing to update from ERP!")
-    
+        logging.info("Nothing to update from ERP!")
+
+    # set current log as latest log
+    if os.path.lexists(latest_log):
+        os.unlink(latest_log)
+    os.symlink(log_file_path, latest_log)
