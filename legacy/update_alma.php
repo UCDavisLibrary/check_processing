@@ -251,6 +251,12 @@ foreach ($pdo_array as $key =>$pdo){
 
 $count = 0;
 // look at the xml directory and look through each xml file
+function custom_sort($a, $b){
+    return strcmp($a->number, $b->number);
+}
+
+usort($invoice_array, "custom_sort");
+
 foreach ($invoice_array as $invoice) {
     if($row = $pdo_array[$invoice->number]){
         if( floatval($row["PAYMENT_TOTAL_AMT"]) != floatval($invoice->total_amount)){
