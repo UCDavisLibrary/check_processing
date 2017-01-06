@@ -22,7 +22,7 @@ from urllib2 import Request, urlopen
 from urllib import urlencode, quote_plus
 
 config = ConfigParser.ConfigParser()
-config.readfp(open('config.cfg'))
+config.readfp(open('config.ini'))
 
 
 class erp_xml():
