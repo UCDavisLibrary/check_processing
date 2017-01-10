@@ -10,9 +10,9 @@ import ConfigParser
 import datetime
 import logging
 import os
+import shutil
 import time
 import xml.etree.ElementTree as ET
-
 
 from pprint import pprint
 
@@ -196,19 +196,41 @@ if __name__ == "__main__":
         os.mkdir(apfeed_dir)
     apfeed_file_path = os.path.join(apfeed_dir, args.apfeed_file)
 
+    # Create and setup archive
+    archive_dir = os.path.join(cwd, "archive")
+    if not os.path.isdir(archive_dir):
+        os.mkdir(archive_dir)
+    xml_arch_dir = os.path.join(archive_dir, "xml")
+    if not os.path.isdir(xml_arch_dir):
+        os.mkdir(xml_arch_dir)
+
     numeric_level = getattr(logging, args.log_level.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log_level)
-    #logging.basicConfig(filename=log_file_path,
-    #                    level=numeric_level)
+    logging.basicConfig(filename=log_file_path,
+                        level=numeric_level)
 
-    # Start reading the xml file for invoices
-    invoices = xml_to_invoices(args.input_file)
-
+    # If input file is not selected we check all files in xml/
+    xmls = []
+    if args.input_file is None:
+        xml_dir = os.path.join(cwd, "xml")
+        for file in os.listdir(xml_dir):
+            if file.endswith(".xml"):
+                xmls.append(os.path.join(xml_dir, file))
+    else:
+        xmls = [args.input_file]
     # Start building Apfeed file
     apf = apfeed()
-    for inv in invoices:
-        apf.add_inv(inv)
+    for xml in xmls:
+        # Start reading the xml file for invoices
+        invoices = xml_to_invoices(xml)
+
+        # Add invoices to apfeed file
+        for inv in invoices:
+            apf.add_inv(inv)
+
+        # Move XML to archive/xml
+        shutil.move(xml, xml_arch_dir)
 
     # Write the file
     with open(apfeed_file_path, 'wb') as apfeed_file:
@@ -222,4 +244,4 @@ if __name__ == "__main__":
     # set current log as latest log
     if os.path.lexists(latest_log):
         os.unlink(latest_log)
-    #os.symlink(log_file_path, latest_log)
+    os.symlink(log_file_path, latest_log)

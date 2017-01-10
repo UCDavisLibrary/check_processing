@@ -1,3 +1,7 @@
 logs/*
 *.sw*
 config.ini
+archive/*/*
+xml/*
+apfeed/*
+input/*
