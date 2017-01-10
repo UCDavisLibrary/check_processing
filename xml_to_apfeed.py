@@ -99,6 +99,9 @@ class apfeed:
             else:
                 org_reference_id = strstr(po_line_nbr.text, '-')
             pmt_amt = float(inv_line.find("exl:fund_info_list/exl:fund_info/exl:amount/exl:sum", ns).text) * 100
+            note = inv_line.find("exl:note", ns)
+            if note is not None and note.text == "UTAX":
+                pmt_tax_cd = 'C'
             istr = "GENERALLIBRARY %s%07d%c%s%-15s%s%s%s%s%s%s%s%s%s%s%s%s%-8s%s %s%s%s%s %s%c%c%05d%s %s%s%s%s%s%-8s%c%.012d%c%c%s" % (
                                         self.now.strftime("%Y%m%d%H%M%S"),
                                         self.org_doc_nbr,
@@ -177,12 +180,21 @@ if __name__ == "__main__":
     parser.add_argument('--log-level',
                         default='INFO',
                         help='log level of written log (default: INFO) Possible [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
+    parser.add_argument('-a', '--apfeed-file',
+                         default="apfeed.LG.%s" %  datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                         help='output file name of apfeed file (default:apfeed.LG.<time>)')
     args = parser.parse_args()
 
     # Create and setup logging
     if not os.path.isdir(log_dir):
         os.mkdir(log_dir)
     log_file_path = os.path.join(log_dir, args.log_file)
+
+    # Create and setup apfeed dir
+    apfeed_dir = os.path.join(cwd, "apfeed")
+    if not os.path.isdir(apfeed_dir):
+        os.mkdir(apfeed_dir)
+    apfeed_file_path = os.path.join(apfeed_dir, args.apfeed_file)
 
     numeric_level = getattr(logging, args.log_level.upper(), None)
     if not isinstance(numeric_level, int):
@@ -197,11 +209,15 @@ if __name__ == "__main__":
     apf = apfeed()
     for inv in invoices:
         apf.add_inv(inv)
-    print(apf.to_string())
 
+    # Write the file
+    with open(apfeed_file_path, 'wb') as apfeed_file:
+        apfeed_file.write(apf.to_string())
 
     # Update config.ini for org_doc_nbr
     config.set("apfeed","org_doc_nbr",apf.org_doc_nbr)
+    with open("config.ini", 'wb') as config_file:
+        config.write(config_file)
 
     # set current log as latest log
     if os.path.lexists(latest_log):
