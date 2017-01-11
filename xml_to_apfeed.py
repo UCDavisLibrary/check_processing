@@ -10,10 +10,13 @@ import ConfigParser
 import datetime
 import logging
 import os
+import paramiko
 import shutil
 import time
 import xml.etree.ElementTree as ET
 
+
+from scp import SCPClient
 from pprint import pprint
 
 # Read config from config.cfg
@@ -28,6 +31,14 @@ def strstr(haystack, needle):
         return haystack
     else:
         return haystack[:pos] + "}"
+
+
+def createSSHClient(server, user, key_file):
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(server, username=user, key_filename=key_file)
+    return client
 
 
 class apfeed:
@@ -183,6 +194,9 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--apfeed-file',
                          default="apfeed.LG.%s" %  datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
                          help='output file name of apfeed file (default:apfeed.LG.<time>)')
+    parser.add_argument('--no-upload',
+                        action='store_true',
+                        default=False)
     args = parser.parse_args()
 
     # Create and setup logging
@@ -222,6 +236,7 @@ if __name__ == "__main__":
     # Start building Apfeed file
     apf = apfeed()
     for xml in xmls:
+        logging.info("Processing %s" % xml)
         # Start reading the xml file for invoices
         invoices = xml_to_invoices(xml)
 
@@ -233,8 +248,20 @@ if __name__ == "__main__":
         shutil.move(xml, xml_arch_dir)
 
     # Write the file
+    logging.info("Writing %s" % apfeed_file_path)
     with open(apfeed_file_path, 'wb') as apfeed_file:
         apfeed_file.write(apf.to_string())
+
+    # Upload to server
+    server = config.get("apfeed_scp_out", "server")
+    user = config.get("apfeed_scp_out", "user")
+    private_key =config.get("apfeed_scp_out", "private_key")
+
+    logging.info("Uploading via SCP")
+    ssh = createSSHClient(server, user, private_key)
+    scp = SCPClient(ssh.get_transport())
+    if not args.no_upload:
+        scp.put(apfeed_file_path)
 
     # Update config.ini for org_doc_nbr
     config.set("apfeed","org_doc_nbr",apf.org_doc_nbr)
