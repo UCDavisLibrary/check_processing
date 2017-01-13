@@ -52,13 +52,33 @@ class apfeed:
         self.emp_ind = 'N'
 
     def add_inv(self, inv):
-        """Add invoice to apfeed file"""
+        """
+        Add invoice to apfeed file
+        Apfeed file format as follows:
+        'GENERALLIBRARY AAAAAAAAAAAAAABBBBBBBCDDDDDDDDDDDEEEEEEEEEEEEEEFFFFFFFFGGGGGGGGGGGGGG                                                                                                                                                                                                                               HHHHHHHHHIIIIIIIIII JJK     LLLLLLLLMN000183 MAINBKS     9200             POL}    C000000002950NN                                        '
+        Values  | Position  | Description
+        A       | 15 - 29   | time now in %Y%m%d%H%M%S
+        B       | 29 - 36   | ORG_DOC_NBR
+        C       | 36 - 37   | EMP_IND
+        D       | 37 - 47   | VEND_CODE
+        E       | 47 - 62   | VEND_ASSIGN_INV_NBR
+        F       | 62 - 70   | VEND_ASSIGN_INV_DATE
+        G       | 70 - 84   | ADDR_SELECT_VEND_NBR
+        H       | 308 - 316 | GOODS_RECEIVED_DT
+        I       | 316 - 327 | ORG_SHP_ZIP_CD
+        J       | 327 - 329 | ORG_SHP_STATE_CD
+        K       | 329 - 330 | PMT_GRP_CD
+        L       | 335 - 343 | SCHEDULED_PMT_DT
+        M       | 343 - 344 | PMT_NON_CHECK_IND
+        N       | 344 - 345 | FIN_COA_CD
+
+
+        """
         self.org_doc_nbr += 1
         # Foreach of the invoice lines
         vend_nbr = inv.find("exl:vendor_additional_code", ns).text
         vend_assign_inv_nbr = inv.find("exl:invoice_number", ns).text
-        vend_assign_inv_date = datetime.datetime.strptime(inv.find("exl:invoice_date", ns).text,
-                                                 "%m/%d/%Y")
+        vend_assign_inv_date = datetime.datetime.strptime(inv.find("exl:invoice_date", ns).text, "%m/%d/%Y")
         addr_select_vend_nbr = inv.find("exl:vendor_additional_code", ns).text.replace(" ", "")
         pmt_remit_nm = " " * 40
         pmt_remit_line_1_addr = " " * 40
@@ -164,7 +184,6 @@ class apfeed:
         out += "\n**TRAILERGENERALLIBRARY %06d" % self.count
         return out
 
-
 def xml_to_invoices(input_file):
     out = []
     with open(input_file, 'r') as xml_file:
@@ -257,10 +276,11 @@ if __name__ == "__main__":
     user = config.get("apfeed_scp_out", "user")
     private_key =config.get("apfeed_scp_out", "private_key")
 
-    logging.info("Uploading via SCP")
-    ssh = createSSHClient(server, user, private_key)
-    scp = SCPClient(ssh.get_transport())
+
     if not args.no_upload:
+        logging.info("Uploading via SCP")
+        ssh = createSSHClient(server, user, private_key)
+        scp = SCPClient(ssh.get_transport())
         scp.put(apfeed_file_path)
 
     # Update config.ini for org_doc_nbr
