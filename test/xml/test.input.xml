@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment_confirmation_data xmlns="http://com/exlibris/repository/acq/xmlbeans">
+  <invoice_list>
+    <invoice>
+      <invoice_number>US10046263</invoice_number>
+      <unique_identifier>4829238050003126</unique_identifier>
+      <invoice_date>20161205</invoice_date>
+      <vendor_code>PRQST</vendor_code>
+      <payment_status>PAID</payment_status>
+      <payment_voucher_date>20161220</payment_voucher_date>
+      <payment_voucher_number>V40047088</payment_voucher_number>
+      <voucher_amount>
+        <currency>USD</currency>
+        <sum>3810</sum>
+      </voucher_amount>
+    </invoice>
+  </invoice_list>
+</payment_confirmation_data>
+

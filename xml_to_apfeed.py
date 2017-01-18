@@ -55,7 +55,7 @@ class apfeed:
         """
         Add invoice to apfeed file
         Apfeed file format as follows:
-        'GENERALLIBRARY AAAAAAAAAAAAAABBBBBBBCDDDDDDDDDDDEEEEEEEEEEEEEEFFFFFFFFGGGGGGGGGGGGGG                                                                                                                                                                                                                               HHHHHHHHHIIIIIIIIII JJK     LLLLLLLLMN000183 MAINBKS     9200             POL}    C000000002950NN                                        '
+        'GENERALLIBRARY AAAAAAAAAAAAAABBBBBBBCDDDDDDDDDDDEEEEEEEEEEEEEEFFFFFFFFGGGGGGGGGGGGGG                                                                                                                                                                                                                               HHHHHHHHHIIIIIIIIII JJK     LLLLLLLLMNOOOOO3 MAINBKS     9200             POL}    C000000002950NN                                        '
         Values  | Position  | Description
         A       | 15 - 29   | time now in %Y%m%d%H%M%S
         B       | 29 - 36   | ORG_DOC_NBR
@@ -71,6 +71,7 @@ class apfeed:
         L       | 335 - 343 | SCHEDULED_PMT_DT
         M       | 343 - 344 | PMT_NON_CHECK_IND
         N       | 344 - 345 | FIN_COA_CD
+        O       | 
 
 
         """
@@ -211,11 +212,19 @@ if __name__ == "__main__":
                         default='INFO',
                         help='log level of written log (default: INFO) Possible [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
     parser.add_argument('-a', '--apfeed-file',
-                         default="apfeed.LG.%s" %  datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
-                         help='output file name of apfeed file (default:apfeed.LG.<time>)')
+                        default="apfeed.LG.%s" %  datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                        help='output file name of apfeed file (default:apfeed.LG.<time>)')
     parser.add_argument('--no-upload',
                         action='store_true',
-                        default=False)
+                        default=False,
+                        help='Tells xml_to_apfeed not to upload the apfeed file to kfs (default:False)')
+    parser.add_argument('-x', '--xml-dir',
+                        default=os.path.join(cwd, "xml"),
+                        help='Directory where it will try to ingest the xml files from. (default:<cwd>/xml)')
+    parser.add_argument('--archive-dir',
+                        default=os.path.join(cwd, "archive"),
+                        help='Directory where xml_to_apfeed will archive xmls and apfeed (default:<cwd>/archive)')
+
     args = parser.parse_args()
 
     # Create and setup logging
@@ -230,7 +239,7 @@ if __name__ == "__main__":
     apfeed_file_path = os.path.join(apfeed_dir, args.apfeed_file)
 
     # Create and setup archive
-    archive_dir = os.path.join(cwd, "archive")
+    archive_dir = args.archive_dir
     if not os.path.isdir(archive_dir):
         os.mkdir(archive_dir)
     xml_arch_dir = os.path.join(archive_dir, "xml")
@@ -242,11 +251,12 @@ if __name__ == "__main__":
         raise ValueError('Invalid log level: %s' % args.log_level)
     logging.basicConfig(filename=log_file_path,
                         level=numeric_level)
+    logging.getLogger().addHandler(logging.StreamHandler())
 
     # If input file is not selected we check all files in xml/
     xmls = []
     if args.input_file is None:
-        xml_dir = os.path.join(cwd, "xml")
+        xml_dir = args.xml_dir 
         for file in os.listdir(xml_dir):
             if file.endswith(".xml"):
                 xmls.append(os.path.join(xml_dir, file))

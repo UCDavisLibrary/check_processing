@@ -370,5 +370,91 @@
         </invoice_line>
       </invoice_line_list>
     </invoice>
+        <invoice>
+      <invoice_number>RENEWAL110316</invoice_number>
+      <invoice_owner>University of California Davis</invoice_owner>
+      <approved_by>Young Lynette</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>120</sum>
+      </invoice_amount>
+      <vendor_code>N-000000882</vendor_code>
+      <vendor_name>JG press</vendor_name>
+      <vendor_additional_code>0000012308 0002</vendor_additional_code>
+      <vendor_liable_for_vat>false</vendor_liable_for_vat>
+      <vendor_payment_address_list/>
+      <unique_identifier>4542095560003126</unique_identifier>
+      <invoice_date>11/03/2016</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <noteList>
+        <note>
+          <content>ATTACHMENT</content>
+          <owneredEntity>
+            <createdBy>lynyoung</createdBy>
+            <creationDate>20161117</creationDate>
+            <customerId>3125</customerId>
+            <institutionId>3126</institutionId>
+            <modificationDate>20161117</modificationDate>
+            <modifiedBy>lynyoung</modifiedBy>
+          </owneredEntity>
+        </note>
+      </noteList>
+      <invoice_ownered_entity>
+        <createdBy>smunn</createdBy>
+        <creationDate>20161108</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>lynyoung</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>INCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>1</line_number>
+          <line_type>REGULAR</line_type>
+          <note>2017-2018 2 yrs.</note>
+          <quantity>1</quantity>
+          <total_price>120.0</total_price>
+          <price>120.0</price>
+          <po_line_info>
+            <fully_Invoiced_ind>false</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>990007980400403126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>0276-5055</acqterms_identifier>
+              <acqterms_identifierType>ISSN</acqterms_identifierType>
+              <acqterms_place>[Emmaus, PA] :</acqterms_place>
+              <date>[Vol. 22, no. 1] (Jan./Feb. 1981)-</date>
+              <publisher>JG Press</publisher>
+            </meta_data_values>
+            <additional_order_reference>DA66262</additional_order_reference>
+            <po_line_number>O1560372</po_line_number>
+            <po_line_price>74.0</po_line_price>
+            <po_line_title>BioCycle</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>120</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRS</code>
+              <name>BIO AG  PRINT SERIALS</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>SER</fund_type>
+              <fund_type_desc>Serials</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
   </invoice_list>
 </payment_data>

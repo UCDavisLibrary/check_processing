@@ -812,7 +812,7 @@ if (!empty($xml_results['error'])){
             fwrite($log,timeStamp().": Finished translatting $file_ct XML file(s) to apfeed.");
             
             // try to upload the apfeed files to the ftp server
-            $upload_results = SCP_OR_FTP == 'FTP' ? ftp_upload_apfeed_files($apfeed_exported) : scp_upload_apfeed_files($apfeed_exported);
+            #$upload_results = SCP_OR_FTP == 'FTP' ? ftp_upload_apfeed_files($apfeed_exported) : scp_upload_apfeed_files($apfeed_exported);
             
             // if ftp errors occurred, record them. Otherwise, log upload stats.
             if (!empty($upload_results['error'])){

@@ -1,3 +1,4 @@
+import ConfigParser
 import datetime
 import sys
 import os
@@ -5,7 +6,6 @@ import unittest
 
 sys.path.append("./..")
 import xml_to_apfeed
-
 from pprint import pprint
 
 cwd = os.getcwd()
@@ -14,14 +14,16 @@ ns = {'exl': 'http://com/exlibris/repository/acq/invoice/xmlbeans'}
 # Test files
 test_dir = os.path.join(cwd, "test")
 xml_dir = os.path.join(test_dir, "xml")
+apfeed_dir = os.path.join(test_dir, "apfeed")
 test_xml = os.path.join(xml_dir, "test.xml")
+
 
 class TestBase(unittest.TestCase):
     def test_xml_import(self):
         """Test that ingesting xml to invoice was done correctly"""
         invs = xml_to_apfeed.xml_to_invoices(test_xml)
         self.assertIsNotNone(invs, "Invoices were not read properly by XML parser")
-        self.assertIs(len(invs), 2, "Incorrect number of invoices ingested: {0} Expecting 2".format(len(invs)))
+        self.assertIs(len(invs), 3, "Incorrect number of invoices ingested: {0} Expecting 2".format(len(invs)))
         self.assertEquals(invs[0].find("exl:invoice_number", ns).text, "0201821", "Incorrect invoice number: got({0}), expecting '0201821'".format(invs[0].find("exl:invoice_number", ns).text))
 
     def inv_str(self, s, start, end, val, tag):
@@ -33,7 +35,10 @@ class TestBase(unittest.TestCase):
         invs = xml_to_apfeed.xml_to_invoices(test_xml)
         org_doc_nbr = apf.org_doc_nbr
         inv = invs[0]
-        apf.add_inv(inv)
+        for inv in  invs:
+            apf.add_inv(inv)
+            break
+        now = datetime.datetime.now()
 
         self.assertEquals(apf.org_doc_nbr, org_doc_nbr + 1, "Adding inv not incrementing org_doc_nbr")
         self.assertEquals(apf.count, 2, "Incorrect count number: got(%d), expecting 2" % apf.count)
@@ -50,7 +55,7 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 316, 327, '95616-5292 ', 'ORG_SHP_ZIP_CD')
         self.inv_str(istr, 327, 329, 'CA', 'ORG_SHP_STATE_CD')
         self.inv_str(istr, 329, 330, '2', 'PMT_GRP_CD')
-        self.inv_str(istr, 335, 343, '20170112', 'SCHEDULED_PMT_DT')
+        self.inv_str(istr, 335, 343, now.strftime("%Y%m%d"), 'SCHEDULED_PMT_DT')
         self.inv_str(istr, 343, 344, 'N', 'PMT_NON_CHECK_IND')
         self.inv_str(istr, 344, 345, 'N', 'ATTACHMENT_REQ_IND')
         self.inv_str(istr, 345, 350, '00018', 'PMT_LINE_NBR')
@@ -77,7 +82,7 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 316, 327, '95616-5292 ', 'ORG_SHP_ZIP_CD')
         self.inv_str(istr, 327, 329, 'CA', 'ORG_SHP_STATE_CD')
         self.inv_str(istr, 329, 330, '2', 'PMT_GRP_CD')
-        self.inv_str(istr, 335, 343, '20170112', 'SCHEDULED_PMT_DT')
+        self.inv_str(istr, 335, 343, now.strftime("%Y%m%d"), 'SCHEDULED_PMT_DT')
         self.inv_str(istr, 343, 344, 'N', 'PMT_NON_CHECK_IND')
         self.inv_str(istr, 344, 345, 'N', 'ATTACHMENT_REQ_IND')
         self.inv_str(istr, 345, 350, '00001', 'PMT_LINE_NBR')
@@ -89,6 +94,22 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 390, 402, '000000003256', 'PMT_AMT')
         self.inv_str(istr, 402, 403, 'N', 'APPLY_DISC_IND')
         self.inv_str(istr, 403, 404, 'N', 'EFT_OVERRIDE_IND')
+
+        self.assertEquals(apf.to_string().count("\n"), 9, "apf to_string() did not have the correct number of lines (got: %d, expecting: 9)" % apf.to_string().count("\n"))
+
+        apf.add_inv(invs[2])
+        self.inv_str(apf.invoices[8], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')
+
+
+    def test_scp(self):
+        # Read config from config.cfg
+        config = ConfigParser.ConfigParser()
+        config.readfp(open('config.ini'))
+        server = config.get("apfeed_scp_out", "server")
+        user = config.get("apfeed_scp_out", "user")
+        private_key =config.get("apfeed_scp_out", "private_key") 
+        self.assertIsNotNone(xml_to_apfeed.createSSHClient(server, user, private_key), "SSH Client failed to create")
+
 
 if __name__ == '__main__':
     unittest.main()

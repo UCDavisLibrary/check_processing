@@ -5,3 +5,6 @@ archive/*/*
 xml/*
 apfeed/*
 input/*
+*.pyc
+htmlcov/*
+.coverage

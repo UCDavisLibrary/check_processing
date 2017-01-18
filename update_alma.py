@@ -33,7 +33,7 @@ class erp_xml():
         self.il = ET.SubElement(self.pcd, "invoice_list")
         self.count = 0
 
-    def tostring(self):
+    def to_string(self):
         xmlstr = xml.dom.minidom.parseString(ET.tostring(self.pcd)).toprettyxml(indent="   ", encoding="UTF-8")
         return xmlstr
 
@@ -237,7 +237,9 @@ if __name__ == "__main__":
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log_level)
     logging.basicConfig(filename=log_file_path,
-                        level=numeric_level)
+                        level=numeric_level,
+                        format="[%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
+    logging.getLogger().addHandler(logging.StreamHandler())
 
     # Get Alma invoices
     invoices, nums = get_waiting_invoices(args.query)
@@ -250,7 +252,7 @@ if __name__ == "__main__":
 
     if erp.count > 0:
         with open(args.output_file, 'w') as xml_file:
-            xml_file.write(erp.tostring())
+            xml_file.write(erp.to_string())
     else:
         logging.info("Nothing to update from ERP!")
 
