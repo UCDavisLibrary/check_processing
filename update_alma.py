@@ -1,13 +1,14 @@
-# Author: Alexander Lin (alxlin@ucdavis.edu)
-# Python version of update_alma.php
-# Inputs: None
-# Output: XML in format to be ingested by Alma
-# Queries Alma to find invoices that are waiting for payment
-# Queries KFS to determine if those invoices are paid
+"""
+Author: Alexander Lin (alxlin@ucdavis.edu)
+Python version of update_alma.php
+Inputs: None
+Output: XML in format to be ingested by Alma
+Queries Alma to find invoices that are waiting for payment
+Queries KFS to determine if those invoices are paid
+"""
 
 import argparse
 import ConfigParser
-import cx_Oracle
 import json
 import logging
 import os
@@ -16,90 +17,110 @@ import time
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
-from lib2to3.fixer_util import String
 from multiprocessing.pool import ThreadPool
-from urllib2 import Request, urlopen
+from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus
 
-config = ConfigParser.ConfigParser()
-config.readfp(open('config.ini'))
+import cx_Oracle
+
+CONFIG = ConfigParser.ConfigParser()
+CONFIG.readfp(open('config.ini'))
 
 
-class erp_xml():
+def add_subele_text(parent, tag, text):
+    """
+    Add varable as tag and text to element tree
+    """
+    child = ET.SubElement(parent, tag)
+    child.text = text
+
+
+class ErpXml(object):
     """ERP formated expected XML"""
     def __init__(self):
         self.pcd = ET.Element(
             "payment_confirmation_data",
             {"xmlns": "http://com/exlibris/repository/acq/xmlbeans"}
         )
-        self.il = ET.SubElement(self.pcd, "invoice_list")
+        self.inv_list = ET.SubElement(self.pcd, "invoice_list")
         self.count = 0
 
     def to_string(self):
-        x = xml.dom.minidom.parseString(ET.tostring(self.pcd))
-        xmlstr = x.toprettyxml(indent="   ", encoding="UTF-8")
+        """
+        Print the ERP to XML in string format
+        """
+        xmldom = xml.dom.minidom.parseString(ET.tostring(self.pcd))
+        xmlstr = xmldom.toprettyxml(indent="   ", encoding="UTF-8")
         return xmlstr
 
-    def add_SubE_Text(self, parent, tag, text):
-        c = ET.SubElement(parent, tag)
-        c.text = text
 
-    def add_paid_invoice(self, inv_num, alma, kfs):
+
+    def add_paid_invoice(self, num, alma, kfs):
         """
         Add an invoice to the list
         Reads the alma and kfs invoice return values
+        num = invoice number
+        alma = data sent by alma
+        kfs = hash sent by kfs
         """
-        inv = ET.SubElement(self.il, "invoice")
-        self.add_SubE_Text(inv, "invoice_number", inv_num)
-        self.add_SubE_Text(inv, "unique_identifier", alma['id'])
-        self.add_SubE_Text(
+        inv = ET.SubElement(self.inv_list, "invoice")
+        add_subele_text(inv, "invoice_number", num)
+        add_subele_text(inv, "unique_identifier", alma['id'])
+        add_subele_text(
             inv,
             "invoice_date",
-            re.sub(r'(\d+)-(\d+)-(\d+).*',  r'\1\2\3', alma['invoice_date'])
+            re.sub(r'(\d+)-(\d+)-(\d+).*', r'\1\2\3', alma['invoice_date'])
         )
-        self.add_SubE_Text(inv, "vendor_code", alma['vendor']['value'])
-        self.add_SubE_Text(inv, "payment_status", "PAID")
-        self.add_SubE_Text(inv, "payment_voucher_date", kfs['pay_date'])
-        self.add_SubE_Text(inv, "payment_voucher_number", kfs['check_num'])
+        add_subele_text(inv, "vendor_code", alma['vendor']['value'])
+        add_subele_text(inv, "payment_status", "PAID")
+        add_subele_text(inv, "payment_voucher_date", kfs['pay_date'])
+        add_subele_text(inv, "payment_voucher_number", kfs['check_num'])
         amt = ET.SubElement(inv, "voucher_amount")
-        self.add_SubE_Text(amt, 'currency', "USD")
-        self.add_SubE_Text(amt, "sum", str(kfs['pay_amt']))
+        add_subele_text(amt, 'currency', "USD")
+        add_subele_text(amt, "sum", str(kfs['pay_amt']))
         self.count += 1
 
 
-def fetch_alma_json(offset, q=None):
-    if q is None:
-        q = 'status~ready_to_be_paid'
+def fetch_alma_json(offset, query=None):
+    """
+    Queries alma using REST API
+    query - string optional used if you want to modify the query
+    """
+    if query is None:
+        query = 'status~ready_to_be_paid'
     url = 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/'
-    queryParams = '?' + urlencode({
-        quote_plus('q'): q,
+    query_params = '?' + urlencode({
+        quote_plus('q'): query,
         quote_plus('limit'): '100',
         quote_plus('offset'): offset,
         quote_plus('format'): 'json',
-        quote_plus('apikey'): config.get("alma", "api_key")
+        quote_plus('apikey'): CONFIG.get("alma", "api_key")
     })
-    request = Request(url + queryParams)
+    request = Request(url + query_params)
     request.get_method = lambda: 'GET'
     try:
         request_str = urlopen(request).read()
         return json.loads(request_str), None
-    except Exception as e:
-        return None, e
+    except HTTPError as err:
+        logging.error('HTTPError = ' + str(err.code))
 
 
-def list_to_dict(keyFunction, values):
-    return dict((keyFunction(v), v) for v in values)
+def list_to_dict(key_function, values):
+    """
+    turns list to dictionary using function
+    """
+    return dict((key_function(v), v) for v in values)
 
 
-def get_waiting_invoices(q):
+def get_waiting_invoices(query):
     """Queries Alma REST Api for Invoices waiting payment"""
 
     # Do the initial query to find out how many records are necessary
-    request_json, error = fetch_alma_json(0, q)
+    request_json, error = fetch_alma_json(0, query)
     if request_json is None:
         return None, None
     trc = int(request_json['total_record_count'])
-    invoices = request_json['invoice']
+    invs = request_json['invoice']
 
     # do in parallel urlopens to Alma if there are more requests needed
     if trc > 100:
@@ -107,50 +128,48 @@ def get_waiting_invoices(q):
         results = ThreadPool(20).imap_unordered(fetch_alma_json, offsets)
         for ret, error in results:
             if error is None:
-                invoices.extend(ret['invoice'])
+                invs.extend(ret['invoice'])
             else:
-                logging.error("error fetching: %s" % (error))
+                logging.error("error fetching: %s", error)
 
     # Generates a list of ids along
     # with remove any that don't have the current payment status
-    nums = []
-    for invoice in invoices[:]:
-        nums.append(invoice['number'])
+    inv_nums = []
+    for invoice in invs[:]:
+        inv_nums.append(invoice['number'])
         if invoice['payment']['payment_status']['value'] != "NOT_PAID":
             logging.warn(
-                "Invoice %s payment status is not 'NOT_PAID'" % (
-                    invoice['number']
-                )
+                "Invoice %s payment status is not 'NOT_PAID'",
+                invoice['number']
             )
-            invoices.remove(invoice)
+            invs.remove(invoice)
 
     # Remap list to a dictionary using id as key
-    invoices = list_to_dict(lambda a: a['number'], invoices)
-    return invoices, nums
+    invs = list_to_dict(lambda a: a['number'], invs)
+    return invs, inv_nums
 
 
 def kfs_query(ids):
     """Queries Accounting KFS Database to see if the invoices are paid"""
-    kfs_inv = dict()
+    kfs_invs = dict()
 
     # If given empty set of ids
     if ids is None:
-        return kfs_inv
+        return kfs_invs
 
     try:
-        dsn_tns = cx_Oracle.makedsn(
-            config.get("oracle", "server"),
-            1521,
-            'dsprod'
-        )
-        con = cx_Oracle.connect(config.get("oracle", "username"),
-                                config.get("oracle", "password"),
-                                dsn_tns)
-    except cx_Oracle.DatabaseError, exception:
+        con = cx_Oracle.connect(CONFIG.get("oracle", "username"),
+                                CONFIG.get("oracle", "password"),
+                                cx_Oracle.makedsn(
+                                    CONFIG.get("oracle", "server"),
+                                    1521,
+                                    'dsprod'
+                                    )
+                               )
+    except cx_Oracle.DatabaseError:
         logging.error(
-            'Failed to connect to %s\n' % (
-                config.get("oracle", "server")
-            )
+            'Failed to connect to %s\n',
+            CONFIG.get("oracle", "server")
         )
         exit(1)
     cur = con.cursor()
@@ -204,7 +223,7 @@ def kfs_query(ids):
     """ % (q_str)
 
     if cur.execute(query):
-        for c in cur:
+        for res in cur:
             (doc_num,
              vendor_id,
              vendor_name,
@@ -212,28 +231,32 @@ def kfs_query(ids):
              check_num,
              pay_amt,
              pay_date,
-             doc_type) = c
-            if num in kfs_inv:
+             doc_type) = res
+            if num in kfs_invs:
                 logging.warn(
                     "Multiple invoice numbers detected: "
-                    "%s: Skipping invoice" % num)
-                kfs_inv.pop(num)
+                    "%s: Skipping invoice",
+                    num
+                )
+                kfs_invs.pop(num)
             else:
-                kfs_inv[num] = {'doc_num': doc_num,
-                                'vendor_id': vendor_id,
-                                'vendor_name': vendor_name,
-                                'check_num': check_num,
-                                'pay_amt': pay_amt,
-                                'pay_date': pay_date}
+                kfs_invs[num] = {'doc_num': doc_num,
+                                 'vendor_id': vendor_id,
+                                 'vendor_name': vendor_name,
+                                 'check_num': check_num,
+                                 'pay_amt': pay_amt,
+                                 'pay_date': pay_date,
+                                 'doc_type' : doc_type}
     else:
         logging.error("KFS Query Failed")
     con.close()
 
-    return kfs_inv
+    return kfs_invs
 
-if __name__ == "__main__":
+# pylint: disable=C0103
+if __name__ == '__main__':
     # Build XML
-    erp = erp_xml()
+    erp = ErpXml()
 
     # Constants
     mytime = int(time.time())
@@ -289,11 +312,10 @@ if __name__ == "__main__":
         if kfs_inv['pay_amt'] != invoices[inv_num]['total_amount']:
             logging.warn(
                 "Invoice(%s) payment record doesn't match KFS"
-                " (%s != %s)" % (
-                    inv_num,
-                    kfs_inv['pay_amt'],
-                    invoices[inv_num]['total_amount']
-                )
+                " (%s != %s)",
+                inv_num,
+                kfs_inv['pay_amt'],
+                invoices[inv_num]['total_amount']
             )
         erp.add_paid_invoice(inv_num, invoices[inv_num], kfs_inv)
 

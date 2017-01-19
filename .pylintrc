@@ -1,0 +1,3 @@
+[TYPECHECK]
+ignored-modules = cx_Oracle
+ignored-classe = cx_Oracle

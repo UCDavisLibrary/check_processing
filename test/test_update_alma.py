@@ -32,7 +32,7 @@ class Test_Update_Alma(unittest.TestCase):
             self.assertEquals(inv.find("{%s}payment_voucher_date" %nse).text, kfs_hash['US10046263']['pay_date'], "KFS query mismatched our own test xml in pay date %s != %s" % (inv.find("{%s}payment_voucher_date" %nse).text, kfs_hash['US10046263']['pay_date']))
 
     def test_erp_xml(self):
-        erp  = update_alma.erp_xml()
+        erp  = update_alma.ErpXml()
         self.assertEquals(erp.to_string(), '<?xml version="1.0" encoding="UTF-8"?>\n<payment_confirmation_data xmlns="http://com/exlibris/repository/acq/xmlbeans">\n   <invoice_list/>\n</payment_confirmation_data>\n', "ERP XML intialization string is incorrect")
         inv_num = 'US10046263'
         alma = {'id' : '4829238050003126',

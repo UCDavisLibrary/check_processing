@@ -28,19 +28,22 @@ Look Below
 ### Logging: ###
 Each time a script is run, it will generate an individual log file along with creating a symbolick link to the latest log (scriptname.latest.log)
 
-### Testing ###
-To run unit tests:
-python2.7 -m unittest discover -s test
+### MakeFile ###
 
-### Coverage ###
-To run code coverage:
-coverage run --omit "test/*" -m unittest discover -s
-coverage report
+Run Unit Tests
+    make test
+
+Run Coverage
+    make coverage
+
+Run pep8 style checking
+    make pep8
 
 ### TODO ###
 * Phase 3
 * Create an install gnu make target to install to a directory, currently it is just copied manually
 * pylint?
+
 
 ### Who do I talk to? ###
 
