@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment_data xmlns="http://com/exlibris/repository/acq/invoice/xmlbeans">
+  <invoice_list>
+    <invoice>
+      <invoice_number>0201821</invoice_number>
+      <invoice_owner>University of California Davis</invoice_owner>
+      <approved_by>Young Lynette</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>736.59</sum>
+      </invoice_amount>
+      <vendor_code>PUVIL</vendor_code>
+      <vendor_name>PUVILL LIBROS SA</vendor_name>
+      <vendor_additional_code>0000002413 0002</vendor_additional_code>
+      <vendor_liable_for_vat>false</vendor_liable_for_vat>
+      <vendor_payment_address_list/>
+      <unique_identifier>4917359470003126</unique_identifier>
+      <invoice_date>11/25/2016</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <invoice_ownered_entity>
+        <createdBy>DNTOAN</createdBy>
+        <creationDate>20170104</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>lynyoung</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>INCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>18</line_number>
+          <line_type>REGULAR</line_type>
+          <note>UTAX</note>
+          <quantity>1</quantity>
+          <reporting_code>mla</reporting_code>
+          <total_price>29.5</total_price>
+          <price>29.5</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>9980960742103126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9788401017520</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Barcelona :</acqterms_place>
+              <creator>Martínez Reverte, Javier, 1944-</creator>
+              <date>2016.</date>
+              <publisher>Plaza &amp; Janés</publisher>
+            </meta_data_values>
+            <po_line_number>POL-12503</po_line_number>
+            <po_line_price>29.5</po_line_price>
+            <po_line_title>New York, New York-- / Javier Reverte.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>29.5</sum>
+              </amount>
+              <code>H/SSIBEROXXXPRA</code>
+              <name>H/SS IBEROAMERICANA PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>3</line_number>
+          <line_type>REGULAR</line_type>
+          <note>UTAX: 2017 nos.194-203</note>
+          <quantity>1</quantity>
+          <total_price>97.91</total_price>
+          <price>97.91</price>
+          <po_line_info>
+            <fully_Invoiced_ind>false</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>990030440250403126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>1966-7892</acqterms_identifier>
+              <acqterms_identifierType>ISSN</acqterms_identifierType>
+              <acqterms_place>Paris :</acqterms_place>
+              <date>Began with no 111 (avril 2009).</date>
+              <publisher>Prélude &amp; Fugue</publisher>
+            </meta_data_values>
+            <vendor_note>SUBSCRIPTION to begin with 1998</vendor_note>
+            <po_line_number>O5406213</po_line_number>
+            <po_line_price>142.0</po_line_price>
+            <po_line_title>Classica.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>97.91</sum>
+              </amount>
+              <code>H/SSXXXXXXXXPRS</code>
+              <name>H/SS PRINT SERIALS</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>SER</fund_type>
+              <fund_type_desc>Serials</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
+        <invoice>
+      <invoice_number>895350</invoice_number>
+      <invoice_owner>Acquisitions Dept.</invoice_owner>
+      <approved_by>Young Lynette</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>273.46</sum>
+      </invoice_amount>
+      <vendor_code>YBP</vendor_code>
+      <vendor_name>YBP LIBRARY SERVICES</vendor_name>
+      <vendor_additional_code>0000008563 0005</vendor_additional_code>
+      <vendor_FinancialSys_Code>0000008563 0005</vendor_FinancialSys_Code>
+      <vendor_liable_for_vat>true</vendor_liable_for_vat>
+      <vendor_payment_address_list>
+        <payment_address preferred="false">
+          <line1>PO BOX 277991</line1>
+          <line2>ATLANTA, GA  30384-7991</line2>
+          <types>
+            <type>Payment</type>
+          </types>
+        </payment_address>
+      </vendor_payment_address_list>
+      <unique_identifier>4831524540003126</unique_identifier>
+      <invoice_date>12/08/2016</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <prepaid_ind>false</prepaid_ind>
+      <invoice_ownered_entity>
+        <createdBy>University of California Davis</createdBy>
+        <creationDate>20161215</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>lynyoung</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>LINEEXCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>1</line_number>
+          <line_type>REGULAR</line_type>
+          <note>Unit price : 39.95   
+ Unit price : 32.56   
+ ISBN 0714871184</note>
+          <quantity>1</quantity>
+          <total_price>32.56</total_price>
+          <price>32.56</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Acquisitions Dept.</po_line_owner>
+            <mms_record_id>9980958651103126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9780714871189</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>London ;</acqterms_place>
+              <creator>Clark, Robert, 1961- photographer.</creator>
+              <date>2016</date>
+              <publisher>Phaidon Press,</publisher>
+            </meta_data_values>
+            <vendor_reference_number>40026626317</vendor_reference_number>
+            <po_line_number>POL-11387</po_line_number>
+            <po_line_price>32.56</po_line_price>
+            <po_line_title>Evolution : a visual record / photographs by Robert Clark ; foreword by David Quammen ; text by Joseph Wallace.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>32.56</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRA</code>
+              <name>BIO AG PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>2</line_number>
+          <line_type>REGULAR</line_type>
+          <note>Unit price : 199.99   
+ Unit price : 162.99   
+ ISBN 1107158966</note>
+          <quantity>1</quantity>
+          <total_price>162.99</total_price>
+          <price>162.99</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Acquisitions Dept.</po_line_owner>
+            <mms_record_id>9980958651003126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9781107158962</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Cambridge :</acqterms_place>
+              <creator>Chen, You-Sheng, author.</creator>
+              <date>2016</date>
+              <publisher>Cambridge University Press,</publisher>
+            </meta_data_values>
+            <vendor_reference_number>40026607051</vendor_reference_number>
+            <po_line_number>POL-11388</po_line_number>
+            <po_line_price>162.99</po_line_price>
+            <po_line_title>Flora of Pan-Himalaya. volume 48(2), Asteraceae II, saussuea / You-Sheng Chen.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>162.99</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRA</code>
+              <name>BIO AG PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>3</line_number>
+          <line_type>REGULAR</line_type>
+          <note>Unit price : 29.95   
+ Unit price : 29.95   
+ ISBN 0811714128</note>
+          <quantity>1</quantity>
+          <total_price>29.95</total_price>
+          <price>29.95</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Acquisitions Dept.</po_line_owner>
+            <mms_record_id>9980958650903126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9780811714129</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Lanham, Maryland :</acqterms_place>
+              <creator>Holland, Mary, 1946- author.</creator>
+              <date>2016</date>
+              <publisher>Stackpole Books,</publisher>
+            </meta_data_values>
+            <vendor_reference_number>40026626318</vendor_reference_number>
+            <po_line_number>POL-11389</po_line_number>
+            <po_line_price>29.95</po_line_price>
+            <po_line_title>Naturally curious day by day : a photographic field guide and daily visit to the forests, fields, and wetlands of Eastern North America / Mary Holland.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>29.95</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRA</code>
+              <name>BIO AG PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>4</line_number>
+          <line_type>REGULAR</line_type>
+          <note>Unit price : 27.95   
+ Unit price : 27.95   
+ ISBN 1604697288</note>
+          <quantity>1</quantity>
+          <total_price>27.95</total_price>
+          <price>27.95</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Acquisitions Dept.</po_line_owner>
+            <mms_record_id>9980958650803126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9781604697285</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Portland, Oregon :</acqterms_place>
+              <creator>Maloof, Joan, 1956- author.</creator>
+              <date>2016</date>
+              <publisher>Timber Press,</publisher>
+            </meta_data_values>
+            <vendor_reference_number>40026607052</vendor_reference_number>
+            <po_line_number>POL-11340</po_line_number>
+            <po_line_price>27.95</po_line_price>
+            <po_line_title>Nature's temples : the complex world of old-growth forests / Joan Maloof ; illustrated by Andrew Joslin.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>27.95</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRA</code>
+              <name>BIO AG PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>6</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>0</quantity>
+          <total_price>19.01</total_price>
+          <price>19.01</price>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>19.01</sum>
+              </amount>
+              <code>GENLTAXXXXXXOTF</code>
+              <name>GENERAL TAX OTHER FIRM</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>FIRM</fund_type>
+              <fund_type_desc>Firm order</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>5</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>0</quantity>
+          <total_price>1.0</total_price>
+          <price>1.0</price>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>1</sum>
+              </amount>
+              <code>GENLPOSTXXXXOTF</code>
+              <name>GENERAL POSTAGE OTHER FIRM</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>FIRM</fund_type>
+              <fund_type_desc>Firm order</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
+        <invoice>
+      <invoice_number>RENEWAL110316</invoice_number>
+      <invoice_owner>University of California Davis</invoice_owner>
+      <approved_by>Young Lynette</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>120</sum>
+      </invoice_amount>
+      <vendor_code>N-000000882</vendor_code>
+      <vendor_name>JG press</vendor_name>
+      <vendor_additional_code>0000012308 0002</vendor_additional_code>
+      <vendor_liable_for_vat>false</vendor_liable_for_vat>
+      <vendor_payment_address_list/>
+      <unique_identifier>4542095560003126</unique_identifier>
+      <invoice_date>11/03/2016</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <noteList>
+        <note>
+          <content>ATTACHMENT</content>
+          <owneredEntity>
+            <createdBy>lynyoung</createdBy>
+            <creationDate>20161117</creationDate>
+            <customerId>3125</customerId>
+            <institutionId>3126</institutionId>
+            <modificationDate>20161117</modificationDate>
+            <modifiedBy>lynyoung</modifiedBy>
+          </owneredEntity>
+        </note>
+      </noteList>
+      <invoice_ownered_entity>
+        <createdBy>smunn</createdBy>
+        <creationDate>20161108</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>lynyoung</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>INCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>1</line_number>
+          <line_type>REGULAR</line_type>
+          <note>2017-2018 2 yrs.</note>
+          <quantity>1</quantity>
+          <total_price>120.0</total_price>
+          <price>120.0</price>
+          <po_line_info>
+            <fully_Invoiced_ind>false</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>990007980400403126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>0276-5055</acqterms_identifier>
+              <acqterms_identifierType>ISSN</acqterms_identifierType>
+              <acqterms_place>[Emmaus, PA] :</acqterms_place>
+              <date>[Vol. 22, no. 1] (Jan./Feb. 1981)-</date>
+              <publisher>JG Press</publisher>
+            </meta_data_values>
+            <additional_order_reference>DA66262</additional_order_reference>
+            <po_line_number>O1560372</po_line_number>
+            <po_line_price>74.0</po_line_price>
+            <po_line_title>BioCycle</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>120</sum>
+              </amount>
+              <code>BIOZXXXXXXXXPRS</code>
+              <name>BIO AG  PRINT SERIALS</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>SER</fund_type>
+              <fund_type_desc>Serials</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
+  </invoice_list>
+</payment_data>

@@ -1,2 +1,10 @@
 logs/*
 *.sw*
+config.ini
+archive/*/*
+xml/*
+apfeed/*
+input/*
+*.pyc
+htmlcov/*
+.coverage

@@ -723,7 +723,7 @@ function delete_files($files){
 function update_ini(){
     global $ini;
     
-    file_put_contents('inc/config.inc',json_encode($ini) );
+    file_put_contents('legacy/inc/config.inc',json_encode($ini) );
 }
 //*********  Main process   ************************//
 /*
@@ -783,7 +783,7 @@ if (!empty($xml_results['error'])){
         // get the list of successfully downloaded xml files
         $xml_files = $xml_results['xml_files'];
 
-        $ini = json_decode(file_get_contents('inc/config.inc',TRUE));
+        $ini = json_decode(file_get_contents('legacy/inc/config.inc',TRUE));
         
         // open the invoice log and read its contents int an array.
         if (file_exists($invoice_log_path)){
@@ -812,7 +812,7 @@ if (!empty($xml_results['error'])){
             fwrite($log,timeStamp().": Finished translatting $file_ct XML file(s) to apfeed.");
             
             // try to upload the apfeed files to the ftp server
-            $upload_results = SCP_OR_FTP == 'FTP' ? ftp_upload_apfeed_files($apfeed_exported) : scp_upload_apfeed_files($apfeed_exported);
+            #$upload_results = SCP_OR_FTP == 'FTP' ? ftp_upload_apfeed_files($apfeed_exported) : scp_upload_apfeed_files($apfeed_exported);
             
             // if ftp errors occurred, record them. Otherwise, log upload stats.
             if (!empty($upload_results['error'])){
