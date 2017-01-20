@@ -11,3 +11,7 @@ test:
 .PHONY: pep8
 pep8:
 	pep8 --show-source --show-pep8 *.py
+
+.PHONY: lint
+lint:
+	 pylint --rcfile=.pylintrc *.py

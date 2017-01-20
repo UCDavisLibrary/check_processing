@@ -31,7 +31,7 @@ class TestBase(unittest.TestCase):
 
     def test_apfeed_conversion(self):
         """Test that we properly convert xml to apfeed"""
-        apf = xml_to_apfeed.apfeed()
+        apf = xml_to_apfeed.Apfeed()
         invs = xml_to_apfeed.xml_to_invoices(test_xml)
         org_doc_nbr = apf.org_doc_nbr
         inv = invs[0]
@@ -88,7 +88,7 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 345, 350, '00001', 'PMT_LINE_NBR')
         self.inv_str(istr, 350, 351, '3', 'FIN_COA_CD')
         self.inv_str(istr, 352, 359, 'MAINBKS', 'ACCOUNT_NBR')
-        self.inv_str(istr, 364, 368, '9200', 'FIN_OBJECT_CD') 
+        self.inv_str(istr, 364, 368, '9200', 'FIN_OBJECT_CD')
         self.inv_str(istr, 381, 389, 'POL}    ', 'ORG_REFERENCE_ID')
         self.inv_str(istr, 389, 390, '0', 'PMT_TAX_CD')
         self.inv_str(istr, 390, 402, '000000003256', 'PMT_AMT')
@@ -107,8 +107,8 @@ class TestBase(unittest.TestCase):
         config.readfp(open('config.ini'))
         server = config.get("apfeed_scp_out", "server")
         user = config.get("apfeed_scp_out", "user")
-        private_key =config.get("apfeed_scp_out", "private_key") 
-        self.assertIsNotNone(xml_to_apfeed.createSSHClient(server, user, private_key), "SSH Client failed to create")
+        private_key =config.get("apfeed_scp_out", "private_key")
+        self.assertIsNotNone(xml_to_apfeed.create_ssh_client(server, user, private_key), "SSH Client failed to create")
 
 
 if __name__ == '__main__':
