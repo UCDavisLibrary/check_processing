@@ -13,6 +13,7 @@ import datetime
 import logging
 import os
 import shutil
+import sys
 import time
 import xml.etree.ElementTree as ET
 
@@ -318,6 +319,11 @@ if __name__ == "__main__":
                 xmls.append(os.path.join(xml_dir, xml_file))
     else:
         xmls = [args.input_file]
+
+    if not xmls:
+        logging.info("No XMLs Dectected")
+        sys.exit(0)
+
     # Start building Apfeed file
     apf = Apfeed()
     for xml in xmls:
@@ -347,7 +353,9 @@ if __name__ == "__main__":
         ssh = create_ssh_client(server, user, private_key)
         scp = SCPClient(ssh.get_transport())
         scp.put(apfeed_file_path)
+        logging.info("Uploaded: %s" % apfeed_file_path)
         shutil.move(apfeed_file_path, apfeed_arch_dir)
+        logging.info("Moved %s to %s" % (apfeed_file_path, apfeed_arch_dir))
 
     # Update config.ini for org_doc_nbr
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
