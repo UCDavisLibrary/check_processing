@@ -1,3 +1,5 @@
+#!/usr/bin/env python2.7
+
 """
 Author: Alexander Lin (alxlin@ucdavis.edu)
 Python version of xml_to_apfeed.php
