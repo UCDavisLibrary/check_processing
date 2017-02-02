@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import time
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
@@ -117,6 +118,7 @@ def list_to_dict(key_function, values):
 def get_waiting_invoices(query):
     """Queries Alma REST Api for Invoices waiting payment"""
 
+    logging.info("Getting Waiting Invoices")
     # Do the initial query to find out how many records are necessary
     request_json, error = fetch_alma_json(0, query)
     if request_json is None:
@@ -154,7 +156,7 @@ def get_waiting_invoices(query):
 def kfs_query(ids):
     """Queries Accounting KFS Database to see if the invoices are paid"""
     kfs_invs = dict()
-
+    logging.info("Running KFS Query")
     # If given empty set of ids
     if ids is None:
         return kfs_invs
@@ -265,6 +267,7 @@ if __name__ == '__main__':
     cwd = os.getcwd()
     log_dir = os.path.join(cwd, "logs")
     latest_log = os.path.join(log_dir, "update_alma.latest.log")
+    archive_dir = os.path.join(cwd, "archive")
 
     # Read in Command line Arguments
     parser = argparse.ArgumentParser(description='KFS to Alma Invoice Updater')
@@ -272,6 +275,11 @@ if __name__ == '__main__':
         '-o', '--output-file',
         default="update_alma_%d.input.xml" % mytime,
         help='output file name (default: update_alma_(time).input.xml)'
+    )
+    parser.add_argument(
+        '--output-dir',
+        default=cwd,
+        help="Directory for output file (default: %s)" % cwd
     )
     parser.add_argument(
         '-q', '--query',
@@ -304,7 +312,16 @@ if __name__ == '__main__':
         level=numeric_level,
         format="[%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
     )
-    logging.getLogger().addHandler(logging.StreamHandler())
+    logger = logging.getLogger()
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(numeric_level)
+
+    # Setup archive
+    if not os.path.isdir(archive_dir):
+        os.mkdir(archive_dir)
+    input_archive = os.path.join(archive_dir, "alma_input")
+    if not os.path.isdir(input_archive):
+        os.mkdir(input_archive)
 
     # Get Alma invoices
     invoices, nums = get_waiting_invoices(args.query)
@@ -322,8 +339,11 @@ if __name__ == '__main__':
         erp.add_paid_invoice(inv_num, invoices[inv_num], kfs_inv)
 
     if erp.count > 0:
-        with open(args.output_file, 'w') as xml_file:
+        output_file_path = os.path.join(args.output_dir, args.output_file)
+        with open(output_file_path, 'w') as xml_file:
             xml_file.write(erp.to_string())
+        shutil.copy(output_file_path, input_archive)
+        logging.info("Output XML created: %s", output_file_path)
     else:
         logging.info("Nothing to update from ERP!")
 
@@ -331,3 +351,4 @@ if __name__ == '__main__':
     if os.path.lexists(latest_log):
         os.unlink(latest_log)
     os.symlink(log_file_path, latest_log)
+    logging.info("Done")

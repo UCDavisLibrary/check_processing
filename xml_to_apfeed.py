@@ -69,24 +69,34 @@ class Apfeed(object):
         'GENERALLIBRARY AAAAAAAAAAAAAABBBBBBBCDDDDDDDDDDDEEEEEEEEEEEEEE'
         'FFFFFFFFGGGGGGGGGGGGGG                                          '
         '               HHHHHHHHHIIIIIIIIII JJK     LLLLLLLLMNOOOOO3 '
-        'MAINBKS     9200          POL}    C000000002950NN             '
+        'QQQQQQQ     RRRR          SSSSSSSSTUUUUUUUUUUUUVW             '
         '                           '
-        Values  | Position  | Description
-        A       | 15 - 29   | time now in %Y%m%d%H%M%S
-        B       | 29 - 36   | ORG_DOC_NBR
-        C       | 36 - 37   | EMP_IND
-        D       | 37 - 47   | VEND_CODE
-        E       | 47 - 62   | VEND_ASSIGN_INV_NBR
-        F       | 62 - 70   | VEND_ASSIGN_INV_DATE
-        G       | 70 - 84   | ADDR_SELECT_VEND_NBR
-        H       | 308 - 316 | GOODS_RECEIVED_DT
-        I       | 316 - 327 | ORG_SHP_ZIP_CD
-        J       | 327 - 329 | ORG_SHP_STATE_CD
-        K       | 329 - 330 | PMT_GRP_CD
-        L       | 335 - 343 | SCHEDULED_PMT_DT
-        M       | 343 - 344 | PMT_NON_CHECK_IND
-        N       | 344 - 345 | FIN_COA_CD
+        Values  | Position   | Description
+        A       | 15  - 29   | time now in %Y%m%d%H%M%S
+        B       | 29  - 36   | ORG_DOC_NBR
+        C       | 36  - 37   | EMP_IND
+        D       | 37  - 47   | VEND_CODE
+        E       | 47  - 62   | VEND_ASSIGN_INV_NBR
+        F       | 62  - 70   | VEND_ASSIGN_INV_DATE
+        G       | 70  - 84   | ADDR_SELECT_VEND_NBR
+        H       | 308 - 316  | GOODS_RECEIVED_DT
+        I       | 316 - 327  | ORG_SHP_ZIP_CD
+        J       | 327 - 329  | ORG_SHP_STATE_CD
+        K       | 329 - 330  | PMT_GRP_CD
+        L       | 335 - 343  | SCHEDULED_PMT_DT
+        M       | 343 - 344  | PMT_NON_CHECK_IND
+        N       | 344 - 345  | ATTACHMENT_REQ_IND
+        O       | 345 - 350  | PMT_LINE_NBR
+        P       | 350 - 351  | FIN_COA_CD
+        Q       | 352 - 359  | ACCOUNT_NBR
+        R       | 364 - 368  | FIN_OBJECT_CD
+        S       | 381 - 389  | ORG_REFERENCE_ID
+        T       | 389 - 390  | PMT_TAX_CD
+        U       | 390 - 402  | PMT_AMT
+        V       | 402 - 403  | APPLY_DISC_IND
+        W       | 403 - 404  | EFT_OVERRIDE_IND
         """
+
         self.org_doc_nbr += 1
         # Foreach of the invoice lines
         vend_nbr = inv.find("exl:vendor_additional_code", NSP).text
@@ -110,7 +120,7 @@ class Apfeed(object):
         inv_received_dt = " " * 8
         note_list = inv.find("exl:noteList", NSP)
         if note_list is None:
-            create_dt = inv.find("exl:owneredEntity/exl:creationDate", NSP)
+            create_dt = inv.find("exl:invoice_ownered_entity/exl:creationDate", NSP)
             if create_dt is None:
                 goods_received_dt = " " * 8
             else:
@@ -167,6 +177,16 @@ class Apfeed(object):
             note = inv_line.find("exl:note", NSP)
             if note is not None and note.text == "UTAX":
                 pmt_tax_cd = 'C'
+            if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
+                if (not goods_received_dt.strip()
+                        or not org_shp_zip_cd.strip()
+                        or not org_shp_state_cd.strip()):
+                    logging.error("Conditionally required field is empty:"
+                                  "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
+                                  "ORG_SHP_STATE_CD required when PMT_TAX_CD"
+                                  " is B or C - for invoice: %s", vend_assign_inv_nbr)
+
+
             istr = "GENERALLIBRARY %s%07d%c%s%-15s%s%s" \
                 "%s%s%s%s%s%s%s%s%s%s%-8s%s " \
                 "%s%s%s%s %s%c%c%05d%s %s%s%s%s%s%-8s%c%.012d%c%c%s" % (
@@ -355,9 +375,9 @@ if __name__ == "__main__":
         ssh = create_ssh_client(server, user, private_key)
         scp = SCPClient(ssh.get_transport())
         scp.put(apfeed_file_path)
-        logging.info("Uploaded: %s" % apfeed_file_path)
+        logging.info("Uploaded: %s", apfeed_file_path)
         shutil.move(apfeed_file_path, apfeed_arch_dir)
-        logging.info("Moved %s to %s" % (apfeed_file_path, apfeed_arch_dir))
+        logging.info("Moved %s to %s", apfeed_file_path, apfeed_arch_dir)
 
     # Update config.ini for org_doc_nbr
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
