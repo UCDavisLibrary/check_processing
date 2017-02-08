@@ -56,8 +56,6 @@ class ErpXml(object):
         xmlstr = xmldom.toprettyxml(indent="   ", encoding="UTF-8")
         return xmlstr
 
-
-
     def add_paid_invoice(self, num, alma, kfs):
         """
         Add an invoice to the list
@@ -297,7 +295,14 @@ if __name__ == '__main__':
         help='log level of written log (default: INFO) '
         'Possible [DEBUG, INFO, WARNING, ERROR, CRITICAL]'
     )
+    parser.add_argument(
+        '-t', '--tolerance',
+        default=1,
+        help='percentage of tolerance allowed in paid amount from KFS to Alma'
+    )
     args = parser.parse_args()
+
+    tolerance = float(args.tolerance)/100
 
     # Create and setup logging
     if not os.path.isdir(log_dir):
@@ -328,11 +333,14 @@ if __name__ == '__main__':
 
     # Query KFS Oracle DB
     for inv_num, kfs_inv in sorted(kfs_query(nums).iteritems()):
-        if kfs_inv['pay_amt'] != invoices[inv_num]['total_amount']:
-            logging.warn(
-                "Invoice(%s) payment record doesn't match KFS"
+        diff = abs(kfs_inv['pay_amt'] - invoices[inv_num]['total_amount'])
+        if diff > float(invoices[inv_num]['total_amount']) * tolerance:
+            logging.error(
+                "Invoice(%s) payment record doesn't match Alma"
+                " Outside tolerance of %d"
                 " (%s != %s)",
                 inv_num,
+                args.tolerance,
                 kfs_inv['pay_amt'],
                 invoices[inv_num]['total_amount']
             )

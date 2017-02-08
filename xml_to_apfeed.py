@@ -149,7 +149,7 @@ class Apfeed(object):
         vat_amt = float(
             inv.find("exl:vat_info/exl:vat_amount", NSP).text
         )
-        pmt_tax_cd = 'A' if vat_amt > 0 else '0'
+        pmt_tax_cd_inv = 'A' if vat_amt > 0 else '0'
         apply_disc_ind = CONFIG.get('apfeed', 'apply_disc_ind')
         eft_override_ind = CONFIG.get('apfeed', 'eft_override_ind')
         ap_pmt_purpose_desc = " " * 120
@@ -177,6 +177,11 @@ class Apfeed(object):
             note = inv_line.find("exl:note", NSP)
             if note is not None and note.text == "UTAX":
                 pmt_tax_cd = 'C'
+            else:
+                pmt_tax_cd = pmt_tax_cd_inv
+
+            #FIXME Eventually move this to a class
+            # Validate
             if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
                 if (not goods_received_dt.strip()
                         or not org_shp_zip_cd.strip()
@@ -185,7 +190,6 @@ class Apfeed(object):
                                   "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
                                   "ORG_SHP_STATE_CD required when PMT_TAX_CD"
                                   " is B or C - for invoice: %s", vend_assign_inv_nbr)
-
 
             istr = "GENERALLIBRARY %s%07d%c%s%-15s%s%s" \
                 "%s%s%s%s%s%s%s%s%s%s%-8s%s " \
