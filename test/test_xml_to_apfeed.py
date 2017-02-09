@@ -23,7 +23,7 @@ class TestBase(unittest.TestCase):
         """Test that ingesting xml to invoice was done correctly"""
         invs = xml_to_apfeed.xml_to_invoices(test_xml)
         self.assertIsNotNone(invs, "Invoices were not read properly by XML parser")
-        self.assertIs(len(invs), 3, "Incorrect number of invoices ingested: {0} Expecting 2".format(len(invs)))
+        self.assertIs(len(invs), 4, "Incorrect number of invoices ingested: {0} Expecting 4".format(len(invs)))
         self.assertEquals(invs[0].find("exl:invoice_number", ns).text, "0201821", "Incorrect invoice number: got({0}), expecting '0201821'".format(invs[0].find("exl:invoice_number", ns).text))
 
     def inv_str(self, s, start, end, val, tag):
@@ -106,6 +106,9 @@ class TestBase(unittest.TestCase):
         apf.add_inv(invs[2])
         self.inv_str(apf.invoices[9], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')
 
+        apf.add_inv(invs[3])
+        pprint(apf.invoices[10])
+        self.inv_str(apf.invoices[10], 390, 402, '-00000012000', 'Negative PMT_AMT needs to work')
 
     def test_scp(self):
         # Read config from config.cfg

@@ -169,14 +169,14 @@ class Apfeed(object):
                 org_reference_id = " " * 8
             else:
                 org_reference_id = strstr(po_line_nbr.text, '-')
-            pmt_amt = float(
+            pmt_amt = int(float(
                 inv_line.find(
                     "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
                     NSP
                 ).text
-            ) * 100
+            ) * 100)
             note = inv_line.find("exl:note", NSP)
-            if note is not None and re.match(r"UTAX",note.text):
+            if note is not None and re.match(r"^UTAX",note.text):
                 pmt_tax_cd = 'C'
             else:
                 pmt_tax_cd = pmt_tax_cd_inv
@@ -192,51 +192,53 @@ class Apfeed(object):
                                   "ORG_SHP_STATE_CD required when PMT_TAX_CD"
                                   " is B or C - for invoice: %s", vend_assign_inv_nbr)
 
-            istr = "GENERALLIBRARY %s%07d%c%s%-15s%s%s" \
-                "%s%s%s%s%s%s%s%s%s%s%-8s%s " \
-                "%s%s%s%s %s%c%c%05d%s %s%s%s%s%s%-8s%c%.012d%c%c%s" % (
-                    self.now.strftime("%Y%m%d%H%M%S"),
-                    self.org_doc_nbr,
-                    self.emp_ind,
-                    vend_nbr[0:10],
-                    vend_assign_inv_nbr[0:15],
-                    vend_assign_inv_date.strftime("%Y%m%d"),
-                    addr_select_vend_nbr,
-                    pmt_remit_nm,
-                    pmt_remit_line_1_addr,
-                    pmt_remit_line_2_addr,
-                    pmt_remit_line_3_addr,
-                    pmt_remit_city_nm,
-                    pmt_remit_st_cd,
-                    pmt_remit_zip_cd,
-                    pmt_remit_cntry_cd,
-                    vend_st_res_ind,
-                    inv_received_dt,
-                    goods_received_dt[0:8],
-                    org_shp_zip_cd[0:11],
-                    org_shp_state_cd[0:2],
-                    pmt_grp_cd,
-                    inv_fob_cd,
-                    disc_term_cd,
-                    scheduled_pmt_dt,
-                    pmt_non_check_ind,
-                    attachment_req_ind,
-                    pmt_line_nbr,
-                    fin_coa_cd,
-                    account_nbr[0:7],
-                    sub_acct_nbr,
-                    fin_object_cd,
-                    fin_sub_obj_cd,
-                    project_cd,
-                    org_reference_id[0:8],
-                    pmt_tax_cd,
-                    pmt_amt,
-                    apply_disc_ind,
-                    eft_override_ind,
-                    ap_pmt_purpose_desc
-                )
+            istr = "GENERALLIBRARY "
+            istr += self.now.strftime("%Y%m%d%H%M%S")
+            istr += "{:07d}".format(self.org_doc_nbr)
+            istr += self.emp_ind
+            istr += vend_nbr[0:10]
+            istr += "{:15}".format(vend_assign_inv_nbr[0:15])
+            istr += vend_assign_inv_date.strftime("%Y%m%d")
+            istr += addr_select_vend_nbr
+            istr += pmt_remit_nm
+            istr += pmt_remit_line_1_addr
+            istr += pmt_remit_line_2_addr
+            istr += pmt_remit_line_3_addr
+            istr += pmt_remit_city_nm
+            istr += pmt_remit_st_cd
+            istr += pmt_remit_zip_cd
+            istr += pmt_remit_cntry_cd
+            istr += vend_st_res_ind
+            istr += inv_received_dt
+            istr += goods_received_dt[0:8]
+            istr += org_shp_zip_cd[0:11]
+            istr += " "
+            istr += org_shp_state_cd[0:2]
+            istr += pmt_grp_cd
+            istr += inv_fob_cd
+            istr += disc_term_cd
+            istr += " "
+            istr += scheduled_pmt_dt
+            istr += pmt_non_check_ind
+            istr += attachment_req_ind
+            istr += "{:05d}".format(pmt_line_nbr)
+            istr += fin_coa_cd
+            istr += " "
+            istr += account_nbr[0:7]
+            istr += sub_acct_nbr
+            istr += fin_object_cd
+            istr += fin_sub_obj_cd
+            istr += project_cd
+            istr += "{:8}".format(org_reference_id[0:8])
+            istr += pmt_tax_cd
+            istr += "{:012d}".format(pmt_amt)
+            istr += apply_disc_ind
+            istr += eft_override_ind
+            istr += ap_pmt_purpose_desc
+
             self.invoices.append(istr)
             self.count += 1
+
 
     def to_string(self):
         """To string format which can be printed"""
