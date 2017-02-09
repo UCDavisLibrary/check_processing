@@ -15,6 +15,7 @@ import datetime
 import logging
 import os
 import shutil
+import re
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -175,7 +176,7 @@ class Apfeed(object):
                 ).text
             ) * 100
             note = inv_line.find("exl:note", NSP)
-            if note is not None and note.text == "UTAX":
+            if note is not None and re.match(r"^UTAX",note.text):
                 pmt_tax_cd = 'C'
             else:
                 pmt_tax_cd = pmt_tax_cd_inv
@@ -352,6 +353,7 @@ if __name__ == "__main__":
 
     # Start building Apfeed file
     apf = Apfeed()
+
     for xml in xmls:
         logging.info("Processing %s", xml)
         # Start reading the xml file for invoices

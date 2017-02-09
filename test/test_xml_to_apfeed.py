@@ -41,7 +41,7 @@ class TestBase(unittest.TestCase):
         now = datetime.datetime.now()
 
         self.assertEquals(apf.org_doc_nbr, org_doc_nbr + 1, "Adding inv not incrementing org_doc_nbr")
-        self.assertEquals(apf.count, 2, "Incorrect count number: got(%d), expecting 2" % apf.count)
+        self.assertEquals(apf.count, 3, "Incorrect count number: got(%d), expecting 3" % apf.count)
         istr = apf.invoices[0]
         self.inv_str(istr, 0, 15, 'GENERALLIBRARY ', 'Header')
         self.inv_str(istr, 15, 29, apf.now.strftime("%Y%m%d%H%M%S"), 'Time now')
@@ -61,15 +61,21 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 345, 350, '00018', 'PMT_LINE_NBR')
         self.inv_str(istr, 350, 351, '3', 'FIN_COA_CD')
         self.inv_str(istr, 352, 359, 'MAINBKS', 'ACCOUNT_NBR')
-        self.inv_str(istr, 364, 368, '9200', 'FIN_OBJECT_CD') 
+        self.inv_str(istr, 364, 368, '9200', 'FIN_OBJECT_CD')
         self.inv_str(istr, 381, 389, 'POL}    ', 'ORG_REFERENCE_ID')
         self.inv_str(istr, 389, 390, 'C', 'PMT_TAX_CD')
         self.inv_str(istr, 390, 402, '000000002950', 'PMT_AMT')
         self.inv_str(istr, 402, 403, 'N', 'APPLY_DISC_IND')
         self.inv_str(istr, 403, 404, 'N', 'EFT_OVERRIDE_IND')
 
-        apf.add_inv(invs[1])
+        istr = apf.invoices[1]
+        self.assertEquals(istr[389:390], '0', "UTAX should default to invoices if invoice line doesn't have UTAX");
+
         istr = apf.invoices[2]
+        self.assertEquals(istr[389:390], 'C', "If invoice line note starts with UTAX then it should be set as UTAX");
+
+        apf.add_inv(invs[1])
+        istr = apf.invoices[3]
         self.inv_str(istr, 0, 15, 'GENERALLIBRARY ', 'Header')
         self.inv_str(istr, 15, 29, apf.now.strftime("%Y%m%d%H%M%S"), 'Time now')
         self.inv_str(istr, 29, 36, "%s" % apf.org_doc_nbr,'ORG_DOC_NBR')
@@ -95,10 +101,10 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 402, 403, 'N', 'APPLY_DISC_IND')
         self.inv_str(istr, 403, 404, 'N', 'EFT_OVERRIDE_IND')
 
-        self.assertEquals(apf.to_string().count("\n"), 9, "apf to_string() did not have the correct number of lines (got: %d, expecting: 9)" % apf.to_string().count("\n"))
+        self.assertEquals(apf.to_string().count("\n"), 10, "apf to_string() did not have the correct number of lines (got: %d, expecting: 10)" % apf.to_string().count("\n"))
 
         apf.add_inv(invs[2])
-        self.inv_str(apf.invoices[8], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')
+        self.inv_str(apf.invoices[9], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')
 
 
     def test_scp(self):

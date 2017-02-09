@@ -76,7 +76,6 @@
         <invoice_line>
           <line_number>3</line_number>
           <line_type>REGULAR</line_type>
-          <note>UTAX: 2017 nos.194-203</note>
           <quantity>1</quantity>
           <total_price>97.91</total_price>
           <price>97.91</price>
@@ -109,6 +108,46 @@
               <type>ALLOCATED</type>
               <fund_type>SER</fund_type>
               <fund_type_desc>Serials</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>4</line_number>
+          <line_type>REGULAR</line_type>
+          <note>UTAX v. 1</note>
+          <quantity>1</quantity>
+          <reporting_code>mla</reporting_code>
+          <total_price>29.5</total_price>
+          <price>29.5</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>9980960742103126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>9788401017520</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Barcelona :</acqterms_place>
+              <creator>Martínez Reverte, Javier, 1944-</creator>
+              <date>2016.</date>
+              <publisher>Plaza &amp; Janés</publisher>
+            </meta_data_values>
+            <po_line_number>POL-12503</po_line_number>
+            <po_line_price>29.5</po_line_price>
+            <po_line_title>New York, New York-- / Javier Reverte.</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>29.5</sum>
+              </amount>
+              <code>H/SSIBEROXXXPRA</code>
+              <name>H/SS IBEROAMERICANA PRINT APPROVAL</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>APPR</fund_type>
+              <fund_type_desc>Approval</fund_type_desc>
             </fund_info>
           </fund_info_list>
         </invoice_line>
