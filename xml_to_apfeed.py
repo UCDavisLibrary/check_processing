@@ -176,7 +176,7 @@ class Apfeed(object):
                 ).text
             ) * 100
             note = inv_line.find("exl:note", NSP)
-            if note is not None and re.match(r"^UTAX",note.text):
+            if note is not None and re.match(r"UTAX",note.text):
                 pmt_tax_cd = 'C'
             else:
                 pmt_tax_cd = pmt_tax_cd_inv
