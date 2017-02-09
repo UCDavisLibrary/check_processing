@@ -20,14 +20,16 @@ if __name__ == "__main__":
         description='Reads and parses apfeed file'
     )
 
-    parser.add_argument('-i', '--input-file')
+    parser.add_argument('-i', '--inv-num')
     parser.add_argument('-s', '--string')
+    parser.add_argument('-f', '--file')
 
     args = parser.parse_args()
+
     lines = []
 
-    if args.input_file is not None:
-        with open(args.input_file, 'r') as apf:
+    if args.file is not None:
+        with open(args.file, 'r') as apf:
             lines = apf.readlines()
             lines = lines[1:-1]
     elif args.string is not None:
@@ -58,4 +60,5 @@ if __name__ == "__main__":
         apfd['apply_disc_ind'] = line[402:403]
         apfd['eft_override_ind'] = line[403:404]
 
-        pprint(apfd)
+        if args.inv_num is None or apfd['vend_assign_inv_nbr'].rstrip() == args.inv_num:
+            pprint(apfd)

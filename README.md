@@ -16,20 +16,16 @@ update_alma.py
 * Queries KFS Oracle Database for invoices to see if they have been paid
 * Creates an XML which will be updated to Alma to update invoices statuses
 
+Information:
 * Developer: Alexander Lin
 * Original Author: Michael Baxter
 * Version: 2.0
-
-### How do I get set up? ###'
-TODO:
-Look Below
 
 
 ### Logging: ###
 Each time a script is run, it will generate an individual log file along with creating a symbolick link to the latest log (scriptname.latest.log)
 
 ### MakeFile ###
-
 Run Unit Tests
     make test
 
@@ -39,10 +35,17 @@ Run Coverage
 Run pep8 style checking
     make pep8
 
+Run Linter
+    make lint
+
+Install to directory (default: /usr/local/alma/dafis)
+Override using make install PREFIX="directory path"
+Before you install please run test and lint
+    make install
+
 ### TODO ###
 * Phase 3
 * Create an install gnu make target to install to a directory, currently it is just copied manually
-* pylint?
 
 
 ### Who do I talk to? ###

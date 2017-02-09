@@ -1,3 +1,6 @@
+PREFIX = /usr/local/alma/dafis
+CWD = $(shell pwd)
+
 .PHONY: cover
 cover:
 	coverage run --omit "test/*" -m unittest discover -s test -v
@@ -15,3 +18,12 @@ pep8:
 .PHONY: lint
 lint:
 	 pylint --rcfile=.pylintrc *.py
+
+.PHONY: install
+install : $(PREFIX)/update_alma.py $(PREFIX)/xml_to_apfeed.py
+
+$(PREFIX)/xml_to_apfeed.py: $(CWD)/xml_to_apfeed.py
+	cp $(CWD)/xml_to_apfeed.py $(PREFIX)/xml_to_apfeed.py
+
+$(PREFIX)/update_alma.py: $(CWD)/update_alma.py
+	cp $(CWD)/update_alma.py $(PREFIX)/update_alma.py
