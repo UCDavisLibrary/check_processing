@@ -265,7 +265,6 @@ if __name__ == '__main__':
     # Constants
     mytime = int(time.time())
     cwd = os.getcwd()
-    archive_dir = os.path.join(cwd, "archive")
 
     # Read in Command line Arguments
     parser = argparse.ArgumentParser(description='KFS to Alma Invoice Updater')
@@ -301,6 +300,11 @@ if __name__ == '__main__':
         'Possible [DEBUG, INFO, WARNING, ERROR, CRITICAL]'
     )
     parser.add_argument(
+        '--archive-dir',
+        default=os.path.join(cwd, "archive"),
+        help='archive directory (default: <cwd>/archive)'
+    )
+    parser.add_argument(
         '-t', '--tolerance',
         default=1,
         help='percentage of tolerance allowed in paid amount from KFS to Alma'
@@ -328,9 +332,9 @@ if __name__ == '__main__':
     logger.setLevel(numeric_level)
 
     # Setup archive
-    if not os.path.isdir(archive_dir):
-        os.mkdir(archive_dir)
-    input_archive = os.path.join(archive_dir, "alma_input")
+    if not os.path.isdir(args.archive_dir):
+        os.mkdir(args.archive_dir)
+    input_archive = os.path.join(args.archive_dir, "alma_input")
     if not os.path.isdir(input_archive):
         os.mkdir(input_archive)
 
