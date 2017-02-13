@@ -24,7 +24,9 @@ import paramiko
 
 from scp import SCPClient
 
-# Read config from config.cfg
+# Read config from config.ini
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+CONFIG_PATH = os.path.join(SCRIPT_DIR, 'config.ini')
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open('config.ini'))
 

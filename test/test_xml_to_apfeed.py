@@ -107,7 +107,6 @@ class TestBase(unittest.TestCase):
         self.inv_str(apf.invoices[9], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')
 
         apf.add_inv(invs[3])
-        pprint(apf.invoices[10])
         self.inv_str(apf.invoices[10], 390, 402, '-00000012000', 'Negative PMT_AMT needs to work')
 
     def test_scp(self):
