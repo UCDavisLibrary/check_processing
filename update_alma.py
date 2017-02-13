@@ -265,8 +265,6 @@ if __name__ == '__main__':
     # Constants
     mytime = int(time.time())
     cwd = os.getcwd()
-    log_dir = os.path.join(cwd, "logs")
-    latest_log = os.path.join(log_dir, "update_alma.latest.log")
     archive_dir = os.path.join(cwd, "archive")
 
     # Read in Command line Arguments
@@ -292,6 +290,11 @@ if __name__ == '__main__':
         help='logfile name (default: update_alma.<time>.log)'
     )
     parser.add_argument(
+        '--log-dir',
+        default=os.path.join(cwd, "logs"),
+        help='log directory (default: <cwd>/logs)'
+    )
+    parser.add_argument(
         '--log-level',
         default='INFO',
         help='log level of written log (default: INFO) '
@@ -307,9 +310,10 @@ if __name__ == '__main__':
     tolerance = float(args.tolerance)/100
 
     # Create and setup logging
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
-    log_file_path = os.path.join(log_dir, args.log_file)
+    latest_log = os.path.join(args.log_dir, "update_alma.latest.log")
+    if not os.path.isdir(args.log_dir):
+        os.mkdir(args.log_dir)
+    log_file_path = os.path.join(args.log_dir, args.log_file)
 
     numeric_level = getattr(logging, args.log_level.upper(), None)
     if not isinstance(numeric_level, int):

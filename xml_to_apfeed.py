@@ -268,8 +268,6 @@ if __name__ == "__main__":
     # Constants
     mytime = int(time.time())
     cwd = os.getcwd()
-    log_dir = os.path.join(cwd, "logs")
-    latest_log = os.path.join(log_dir, "xml_to_apfeed.latest.log")
 
     # parse command line arguments
     parser = argparse.ArgumentParser(
@@ -279,15 +277,22 @@ if __name__ == "__main__":
     )
 
     parser.add_argument('-i', '--input-file')
-    parser.add_argument('-l', '--log-file',
-                        default="xml_to_apfeed.%d.log" % mytime,
-                        help='logfile name '
-                             '(default: xml_to_apfeef.<time>.log)')
-    parser.add_argument('--log-level',
-                        default='INFO',
-                        help='log level of written log'
-                             ' (default: INFO) Possible '
-                             '[DEBUG, INFO, WARNING, ERROR, CRITICAL]')
+    parser.add_argument(
+        '-l', '--log-file',
+        default="xml_to_apfeed.%d.log" % mytime,
+        help='logfile name (default: xml_to_apfeef.<time>.log)'
+    )
+    parser.add_argument(
+        '--log-dir',
+        default=os.path.join(cwd, "logs"),
+        help='log directory (default: <cwd>/logs)'
+    )
+    parser.add_argument(
+        '--log-level',
+        default='INFO',
+        help='log level of written log (default: INFO) Possible '
+             '[DEBUG, INFO, WARNING, ERROR, CRITICAL]'
+    )
     parser.add_argument(
         '-a', '--apfeed-file',
         default="apfeed.LG.%s" % datetime.datetime.now().strftime(
@@ -295,27 +300,31 @@ if __name__ == "__main__":
         ),
         help='output file name of apfeed file (default:apfeed.LG.<time>)'
     )
-    parser.add_argument('--no-upload',
-                        action='store_true',
-                        default=False,
-                        help='Tells xml_to_apfeed not to upload the apfeed'
-                             ' file to kfs (default:False)')
-    parser.add_argument('-x', '--xml-dir',
-                        default=os.path.join(cwd, "xml"),
-                        help='Directory where it will try to ingest'
-                             ' the xml files from. (default:<cwd>/xml)')
-    parser.add_argument('--archive-dir',
-                        default=os.path.join(cwd, "archive"),
-                        help='Directory where xml_to_apfeed will'
-                             ' archive xmls and apfeed (default:<cwd>/archive)'
-                       )
+    parser.add_argument(
+        '--no-upload',
+        action='store_true',
+        default=False,
+        help='Tells xml_to_apfeed not to upload the apfeed'
+             ' file to kfs (default:False)')
+    parser.add_argument(
+        '-x', '--xml-dir',
+        default=os.path.join(cwd, "xml"),
+        help='Directory where it will try to ingest'
+             ' the xml files from. (default:<cwd>/xml)')
+    parser.add_argument(
+        '--archive-dir',
+        default=os.path.join(cwd, "archive"),
+        help='Directory where xml_to_apfeed will'
+        ' archive xmls and apfeed (default:<cwd>/archive)'
+    )
 
     args = parser.parse_args()
 
     # Create and setup logging
-    if not os.path.isdir(log_dir):
-        os.mkdir(log_dir)
-    log_file_path = os.path.join(log_dir, args.log_file)
+    latest_log = os.path.join(args.log_dir, "xml_to_apfeed.latest.log")
+    if not os.path.isdir(args.log_dir):
+        os.mkdir(args.log_dir)
+    log_file_path = os.path.join(args.log_dir, args.log_file)
 
     # Create and setup apfeed dir
     apfeed_dir = os.path.join(cwd, "apfeed")
