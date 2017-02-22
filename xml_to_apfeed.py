@@ -104,6 +104,7 @@ class Apfeed(object):
         # Foreach of the invoice lines
         vend_nbr = inv.find("exl:vendor_additional_code", NSP).text
         vend_assign_inv_nbr = inv.find("exl:invoice_number", NSP).text
+        logging.debug("Invoice Number: %s", vend_assign_inv_nbr)
         vend_assign_inv_date = datetime.datetime.strptime(
             inv.find("exl:invoice_date", NSP).text,
             "%m/%d/%Y"
@@ -159,6 +160,7 @@ class Apfeed(object):
         inv_list = inv.findall("./exl:invoice_line_list/exl:invoice_line", NSP)
         for inv_line in inv_list:
             pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
+            logging.debug("- Line Number: %s", pmt_line_nbr)
             account_nbr = inv_line.find(
                 "exl:fund_info_list/exl:fund_info/exl:external_id",
                 NSP
