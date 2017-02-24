@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus
+from pprint import pprint
 
 import cx_Oracle
 
@@ -343,6 +344,9 @@ if __name__ == '__main__':
 
     # Query KFS Oracle DB
     for inv_num, kfs_inv in sorted(kfs_query(nums).iteritems()):
+        if inv_num not in invoices:
+            logging.warn("%s not found in Alma but is in KFS: Skipping", inv_num)
+            continue
         diff = abs(kfs_inv['pay_amt'] - invoices[inv_num]['total_amount'])
         if diff > float(invoices[inv_num]['total_amount']) * tolerance:
             logging.error(

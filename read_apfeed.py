@@ -21,6 +21,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument('-i', '--inv-num')
+    parser.add_argument('-o', '--org-doc')
     parser.add_argument('-s', '--string')
     parser.add_argument('-f', '--file')
 
@@ -60,5 +61,9 @@ if __name__ == "__main__":
         apfd['apply_disc_ind'] = line[402:403]
         apfd['eft_override_ind'] = line[403:404]
 
-        if args.inv_num is None or apfd['vend_assign_inv_nbr'].rstrip() == args.inv_num:
+        if args.inv_num is None and args.org_doc is None:
+            pprint(apfd)
+        if args.inv_num is not None and apfd['vend_assign_inv_nbr'].rstrip() == args.inv_num:
+            pprint(apfd)
+        elif args.org_doc is not None and apfd['org_doc_num'].rstrip() == args.org_doc:
             pprint(apfd)
