@@ -158,6 +158,13 @@ class Apfeed(object):
         eft_override_ind = CONFIG.get('apfeed', 'eft_override_ind')
         ap_pmt_purpose_desc = " " * 120
         inv_list = inv.findall("./exl:invoice_line_list/exl:invoice_line", NSP)
+
+        # Validate
+        # Cannot have invoice date in the future
+        if vend_assign_inv_date.date() > self.now.date():
+            logging.warn("Skipping(%s) Invoice date(%s) is in the future",vend_assign_inv_nbr ,vend_assign_inv_date)
+            return
+
         for inv_line in inv_list:
             pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
             logging.debug("- Line Number: %s", pmt_line_nbr)

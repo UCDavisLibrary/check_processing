@@ -1,13 +1,16 @@
 import ConfigParser
 import datetime
+import logging
 import sys
 import os
 import unittest
+import xml.etree.ElementTree as ET
 
 sys.path.append("./..")
 import xml_to_apfeed
 from pprint import pprint
 
+logging.disable(logging.CRITICAL)
 cwd = os.getcwd()
 ns = {'exl': 'http://com/exlibris/repository/acq/invoice/xmlbeans'}
 
@@ -34,7 +37,6 @@ class TestBase(unittest.TestCase):
         apf = xml_to_apfeed.Apfeed()
         invs = xml_to_apfeed.xml_to_invoices(test_xml)
         org_doc_nbr = apf.org_doc_nbr
-        inv = invs[0]
         for inv in  invs:
             apf.add_inv(inv)
             break
@@ -108,6 +110,13 @@ class TestBase(unittest.TestCase):
 
         apf.add_inv(invs[3])
         self.inv_str(apf.invoices[10], 390, 402, '-00000012000', 'Negative PMT_AMT needs to work')
+
+        inv = invs[0]
+        tomorrow = apf.now + datetime.timedelta(days=1)
+        inv.find("exl:invoice_date",ns).text = tomorrow.strftime("%m/%d/%Y")
+        apf.add_inv(inv)
+        self.assertEquals(apf.count, 11, "Does not include apfeeds that are in the future")
+
 
     def test_scp(self):
         # Read config from config.cfg
