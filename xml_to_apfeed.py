@@ -64,6 +64,7 @@ class Apfeed(object):
         self.invoices = []
         self.org_doc_nbr = int(CONFIG.get("apfeed", "org_doc_nbr"))
         self.emp_ind = 'N'
+        self.errors = 0
 
     def add_inv(self, inv):
         """
@@ -163,6 +164,7 @@ class Apfeed(object):
         # Cannot have invoice date in the future
         if vend_assign_inv_date.date() > self.now.date():
             logging.warn("Skipping(%s) Invoice date(%s) is in the future",vend_assign_inv_nbr ,vend_assign_inv_date)
+            self.errors += 1
             return
 
         for inv_line in inv_list:
@@ -198,10 +200,12 @@ class Apfeed(object):
                 if (not goods_received_dt.strip()
                         or not org_shp_zip_cd.strip()
                         or not org_shp_state_cd.strip()):
-                    logging.error("Conditionally required field is empty:"
+                    logging.warn("Conditionally required field is empty:"
                                   "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
                                   "ORG_SHP_STATE_CD required when PMT_TAX_CD"
                                   " is B or C - for invoice: %s", vend_assign_inv_nbr)
+                    self.errors += 1
+                    return
 
             istr = "GENERALLIBRARY "
             istr += self.now.strftime("%Y%m%d%H%M%S")
@@ -398,7 +402,7 @@ if __name__ == "__main__":
     user = CONFIG.get("apfeed_scp_out", "user")
     private_key = CONFIG.get("apfeed_scp_out", "private_key")
 
-    if not args.no_upload:
+    if not args.no_upload and self.errors == 0:
         logging.info("Uploading via SCP")
         ssh = create_ssh_client(server, user, private_key)
         scp = SCPClient(ssh.get_transport())
@@ -406,6 +410,8 @@ if __name__ == "__main__":
         logging.info("Uploaded: %s", apfeed_file_path)
         shutil.move(apfeed_file_path, apfeed_arch_dir)
         logging.info("Moved %s to %s", apfeed_file_path, apfeed_arch_dir)
+    elif self.errors > 0:
+        logging.info("Not uploading because there were %d errors", self.errors)
 
     # Update config.ini for org_doc_nbr
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
