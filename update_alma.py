@@ -329,7 +329,10 @@ if __name__ == '__main__':
         format="[%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
     )
     logger = logging.getLogger()
-    logger.addHandler(logging.StreamHandler())
+    consoleHandler = logging.StreamHandler()
+    stream_format = logging.Formatter("[%(levelname)-5.5s] %(message)s")
+    consoleHandler.setFormatter(stream_format)
+    logger.addHandler(consoleHandler)
     logger.setLevel(numeric_level)
 
     # Setup archive
@@ -373,4 +376,5 @@ if __name__ == '__main__':
     if os.path.lexists(latest_log):
         os.unlink(latest_log)
     os.symlink(log_file_path, latest_log)
+    logging.info("Log file: %s", log_file_path)
     logging.info("Done")
