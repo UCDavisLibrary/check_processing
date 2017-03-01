@@ -28,7 +28,7 @@ from scp import SCPClient
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(SCRIPT_DIR, 'config.ini')
 CONFIG = ConfigParser.ConfigParser()
-CONFIG.readfp(open('config.ini'))
+CONFIG.readfp(open(CONFIG_PATH))
 
 NSP = {'exl': 'http://com/exlibris/repository/acq/invoice/xmlbeans'}
 
@@ -281,6 +281,7 @@ if __name__ == "__main__":
     # Constants
     mytime = int(time.time())
     cwd = os.getcwd()
+    tmp_dir = "/tmp"
 
     # parse command line arguments
     parser = argparse.ArgumentParser(
@@ -330,7 +331,12 @@ if __name__ == "__main__":
         help='Directory where xml_to_apfeed will'
         ' archive xmls and apfeed (default:<cwd>/archive)'
     )
-
+    parser.add_argument(
+        '--apfeed-dir',
+        default=os.path.join(cwd, "apfeed"),
+        help='Directory where xml_to_apfeed will'
+        ' create apfeed file before upload(default:<cwd>/apfeed)'
+    )
     args = parser.parse_args()
 
     # Create and setup logging
@@ -340,7 +346,7 @@ if __name__ == "__main__":
     log_file_path = os.path.join(args.log_dir, args.log_file)
 
     # Create and setup apfeed dir
-    apfeed_dir = os.path.join(cwd, "apfeed")
+    apfeed_dir = args.apfeed_dir
     if not os.path.isdir(apfeed_dir):
         os.mkdir(apfeed_dir)
     apfeed_file_path = os.path.join(apfeed_dir, args.apfeed_file)
