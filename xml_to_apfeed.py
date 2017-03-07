@@ -408,7 +408,7 @@ if __name__ == "__main__":
     user = CONFIG.get("apfeed_scp_out", "user")
     private_key = CONFIG.get("apfeed_scp_out", "private_key")
 
-    if not args.no_upload and self.errors == 0:
+    if not args.no_upload and apf.errors == 0:
         logging.info("Uploading via SCP")
         ssh = create_ssh_client(server, user, private_key)
         scp = SCPClient(ssh.get_transport())
@@ -416,8 +416,8 @@ if __name__ == "__main__":
         logging.info("Uploaded: %s", apfeed_file_path)
         shutil.move(apfeed_file_path, apfeed_arch_dir)
         logging.info("Moved %s to %s", apfeed_file_path, apfeed_arch_dir)
-    elif self.errors > 0:
-        logging.info("Not uploading because there were %d errors", self.errors)
+    elif apf.errors > 0:
+        logging.info("Not uploading because there were %d errors", apf.errors)
 
     # Update config.ini for org_doc_nbr
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
