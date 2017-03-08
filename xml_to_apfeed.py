@@ -388,15 +388,12 @@ if __name__ == "__main__":
 
     for xml in xmls:
         logging.info("Processing %s", xml)
-        # Start reading the xml file for invoices
+        # Start reading tpyhe xml file for invoices
         invoices = xml_to_invoices(xml)
 
         # Add invoices to apfeed file
         for invoice in invoices:
             apf.add_inv(invoice)
-
-        # Move XML to archive/xml
-        shutil.move(xml, xml_arch_dir)
 
     # Write the file
     logging.info("Writing %s", apfeed_file_path)
@@ -423,6 +420,11 @@ if __name__ == "__main__":
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
     with open("config.ini", 'wb') as config_file:
         CONFIG.write(config_file)
+
+    # move XML to archive
+    for xml in xmls:
+        logging.info("Moving %s to archive", xml)
+        shutil.move(xml, xml_arch_dir)
 
     # set current log as latest log
     if os.path.lexists(latest_log):
