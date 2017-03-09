@@ -27,3 +27,6 @@ $(PREFIX)/xml_to_apfeed.py: $(CWD)/xml_to_apfeed.py
 
 $(PREFIX)/update_alma.py: $(CWD)/update_alma.py
 	cp $(CWD)/update_alma.py $(PREFIX)/update_alma.py
+
+$(PREFIX)/read_apfeed.py: $(CWD)/read_apfeed.py
+	cp $(CWD)/read_apfeed.py $(PREFIX)/read_apfeed.py
