@@ -163,7 +163,7 @@ class Apfeed(object):
         # Validate
         # Cannot have invoice date in the future
         if vend_assign_inv_date.date() > self.now.date():
-            logging.warn("Skipping(%s) Invoice date(%s) is in the future",vend_assign_inv_nbr ,vend_assign_inv_date)
+            logging.warn("Skipping(%s) Invoice date(%s) is in the future", vend_assign_inv_nbr, vend_assign_inv_date)
             self.errors += 1
             return
 
@@ -189,7 +189,7 @@ class Apfeed(object):
                 ).text
             ) * 100)
             note = inv_line.find("exl:note", NSP)
-            if note is not None and re.match(r"^UTAX",note.text):
+            if note is not None and re.match(r"^UTAX", note.text):
                 pmt_tax_cd = 'C'
             else:
                 pmt_tax_cd = pmt_tax_cd_inv
@@ -201,9 +201,9 @@ class Apfeed(object):
                         or not org_shp_zip_cd.strip()
                         or not org_shp_state_cd.strip()):
                     logging.warn("Conditionally required field is empty:"
-                                  "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
-                                  "ORG_SHP_STATE_CD required when PMT_TAX_CD"
-                                  " is B or C - for invoice: %s", vend_assign_inv_nbr)
+                                 "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
+                                 "ORG_SHP_STATE_CD required when PMT_TAX_CD"
+                                 " is B or C - for invoice: %s", vend_assign_inv_nbr)
                     self.errors += 1
                     return
 

@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus
+from pprint import pprint
 
 import cx_Oracle
 
@@ -140,6 +141,7 @@ def get_waiting_invoices(query):
     # with remove any that don't have the current payment status
     inv_nums = []
     for invoice in invs[:]:
+        invoice['number'] = invoice['number'].strip()
         inv_nums.append(invoice['number'])
         if invoice['payment']['payment_status']['value'] != "NOT_PAID":
             logging.warn(
@@ -225,6 +227,7 @@ def kfs_query(ids):
             where vendor_invoice_num IN (%s)
             order by doc_num
     """ % (q_str)
+    logging.debug("Querying invoices: %s", q_str)
 
     if cur.execute(query):
         for res in cur:
