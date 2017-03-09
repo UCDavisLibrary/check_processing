@@ -11,6 +11,7 @@ Creates an apfeed file and uploads it
 
 import argparse
 import ConfigParser
+import csv
 import datetime
 import logging
 import os
@@ -65,6 +66,15 @@ class Apfeed(object):
         self.org_doc_nbr = int(CONFIG.get("apfeed", "org_doc_nbr"))
         self.emp_ind = 'N'
         self.errors = 0
+        self.eids = dict()
+
+    def report_line(self, eid, amt):
+        """Generated a dictionary for reporting on external ids"""
+        amt = float(amt)/100
+        if eid in self.eids:
+            self.eids[eid] += amt
+        else:
+            self.eids[eid] = amt
 
     def add_inv(self, inv):
         """
@@ -188,6 +198,10 @@ class Apfeed(object):
                     NSP
                 ).text
             ) * 100)
+
+            # External ID report
+            self.report_line(account_nbr, pmt_amt)
+
             note = inv_line.find("exl:note", NSP)
             if note is not None and re.match(r"^UTAX", note.text):
                 pmt_tax_cd = 'C'
@@ -294,7 +308,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '-l', '--log-file',
         default="xml_to_apfeed.%d.log" % mytime,
-        help='logfile name (default: xml_to_apfeef.<time>.log)'
+        help='logfile name (default: xml_to_apfeed.<time>.log)'
     )
     parser.add_argument(
         '--log-dir',
@@ -336,6 +350,12 @@ if __name__ == "__main__":
         default=os.path.join(cwd, "apfeed"),
         help='Directory where xml_to_apfeed will'
         ' create apfeed file before upload(default:<cwd>/apfeed)'
+    )
+    parser.add_argument(
+        '--report-dir',
+        default=os.path.join(cwd, "reports"),
+        help='Directory where xml_to_apfeed will'
+        ' create a report csv for External IDs(default:<cwd>/reports)'
     )
     args = parser.parse_args()
 
@@ -395,6 +415,7 @@ if __name__ == "__main__":
         for invoice in invoices:
             apf.add_inv(invoice)
 
+
     # Write the file
     logging.info("Writing %s", apfeed_file_path)
     with open(apfeed_file_path, 'wb') as apfeed_file:
@@ -416,15 +437,28 @@ if __name__ == "__main__":
     elif apf.errors > 0:
         logging.info("Not uploading because there were %d errors", apf.errors)
 
-    # Update config.ini for org_doc_nbr
-    CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
-    with open("config.ini", 'wb') as config_file:
-        CONFIG.write(config_file)
+    # Generate report
+    if not os.path.isdir(args.report_dir):
+        os.mkdir(args.report_dir)
+    report_file = os.path.join(args.report_dir, "external_id.%d.csv" % mytime)
+    logging.info("External ID CSV: %s", report_file)
+    with open(report_file, 'wb') as report_file:
+        w = csv.writer(report_file)
+        w.writerow(('External ID', 'Total'))
+        for k in apf.eids:
+            w.writerow((k,apf.eids[k]))
 
-    # move XML to archive
-    for xml in xmls:
-        logging.info("Moving %s to archive", xml)
-        shutil.move(xml, xml_arch_dir)
+    # Don't update org_doc_nbr if not upload nor archive
+    if not args.no_upload:
+        # Update config.ini for org_doc_nbr
+        CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
+        with open("config.ini", 'wb') as config_file:
+            CONFIG.write(config_file)
+
+        # move XML to archive
+        for xml in xmls:
+            logging.info("Moving %s to archive", xml)
+            shutil.move(xml, xml_arch_dir)
 
     # set current log as latest log
     if os.path.lexists(latest_log):
