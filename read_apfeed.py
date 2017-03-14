@@ -8,7 +8,10 @@ So humans can read an apfeed file
 """
 
 import argparse
+import glob
+import json
 import os
+import sys
 
 from pprint import pprint
 
@@ -24,6 +27,8 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--org-doc')
     parser.add_argument('-s', '--string')
     parser.add_argument('-f', '--file')
+    parser.add_argument('-d', '--directory')
+    parser.add_argument('-j', '--json', action='store_true')
 
     args = parser.parse_args()
 
@@ -35,7 +40,24 @@ if __name__ == "__main__":
             lines = lines[1:-1]
     elif args.string is not None:
         lines = args.string.splitlines()
+    elif args.directory is not None:
+        if args.org_doc is None:
+            print("Error directory needs to be paired with --org-doc")
+            sys.exit(0)
+        files = glob.glob(os.path.join(args.directory, "apfeed.LG.*"))
+        files.sort(reverse=True)
+        for f in files:
+            with open(f, 'r') as apf:
+                lines = apf.readlines()
+                line = lines[1]
+                # get org_doc_num
+                if not line[29:36] or not line[29:36].isdigit():
+                    continue
+                elif int(line[29:36]) <= int(args.org_doc):
+                    print("Found in file: %s" % f)
+                    break
 
+    out = []
     for line in lines:
         apfd = dict()
         apfd['time'] = line[15:29]
@@ -62,8 +84,16 @@ if __name__ == "__main__":
         apfd['eft_override_ind'] = line[403:404]
 
         if args.inv_num is None and args.org_doc is None:
-            pprint(apfd)
+            out.append(apfd)
         if args.inv_num is not None and apfd['vend_assign_inv_nbr'].rstrip() == args.inv_num:
-            pprint(apfd)
+            out.append(apfd)
         elif args.org_doc is not None and apfd['org_doc_num'].rstrip() == args.org_doc:
-            pprint(apfd)
+            out.append(apfd)
+    out = sorted(out, key=lambda k: k['pmt_line_nbr'])
+    if not out:
+        print("Records not found")
+        sys.exit(1);
+    if args.json:
+        print(json.dumps(out))
+    else:
+        pprint(out)

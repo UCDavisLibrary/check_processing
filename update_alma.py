@@ -201,13 +201,6 @@ def kfs_query(ids):
                     on DT.doc_typ_id = DH.doc_typ_id
                 join finance.pdp_pmt_dtl_t PPD
                     on ppd.cust_pmt_doc_nbr = DV.fdoc_nbr
-            where DHX.val in
-                ( 'ULBK'
-                , 'BKDE'
-                , 'BKDG'
-                , 'BKFE'
-                , 'BKRE'
-            )
             UNION
             select CM.fdoc_nbr                         AS doc_num
                 , CM.vndr_cust_nbr                     AS vendor_id

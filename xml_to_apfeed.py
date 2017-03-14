@@ -386,7 +386,8 @@ if __name__ == "__main__":
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log_level)
     logging.basicConfig(filename=log_file_path,
-                        level=numeric_level)
+                        level=numeric_level,
+                        format="[%(levelname)-5.5s] %(message)s")
     logging.getLogger().addHandler(logging.StreamHandler())
 
     # If input file is not selected we check all files in xml/
@@ -418,7 +419,7 @@ if __name__ == "__main__":
 
     # Write the file
     logging.info("Writing %s", apfeed_file_path)
-    with open(apfeed_file_path, 'wb') as apfeed_file:
+    with open(apfeed_file_path, 'w') as apfeed_file:
         apfeed_file.write(apf.to_string())
 
     # Upload to server
@@ -442,17 +443,19 @@ if __name__ == "__main__":
         os.mkdir(args.report_dir)
     report_file = os.path.join(args.report_dir, "external_id.%d.csv" % mytime)
     logging.info("External ID CSV: %s", report_file)
+    logging.info("External ID Totals")
     with open(report_file, 'wb') as report_file:
         w = csv.writer(report_file)
         w.writerow(('External ID', 'Total'))
         for k in apf.eids:
-            w.writerow((k,apf.eids[k]))
+            logging.info("%s: $%.2f", k, apf.eids[k])
+            w.writerow((k,"%.2f" % apf.eids[k]))
 
     # Don't update org_doc_nbr if not upload nor archive
     if not args.no_upload:
         # Update config.ini for org_doc_nbr
         CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
-        with open("config.ini", 'wb') as config_file:
+        with open(CONFIG_PATH, 'w') as config_file:
             CONFIG.write(config_file)
 
         # move XML to archive
