@@ -23,7 +23,6 @@ import xml.etree.ElementTree as ET
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus
-from pprint import pprint
 
 import cx_Oracle
 

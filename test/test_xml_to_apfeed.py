@@ -117,16 +117,5 @@ class TestBase(unittest.TestCase):
         apf.add_inv(inv)
         self.assertEquals(apf.count, 11, "Does not include apfeeds that are in the future")
 
-
-    def test_scp(self):
-        # Read config from config.cfg
-        config = ConfigParser.ConfigParser()
-        config.readfp(open('config.ini'))
-        server = config.get("apfeed_scp_out", "server")
-        user = config.get("apfeed_scp_out", "user")
-        private_key =config.get("apfeed_scp_out", "private_key")
-        self.assertIsNotNone(xml_to_apfeed.create_ssh_client(server, user, private_key), "SSH Client failed to create")
-
-
 if __name__ == '__main__':
     unittest.main()

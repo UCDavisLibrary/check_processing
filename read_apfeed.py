@@ -42,7 +42,7 @@ if __name__ == "__main__":
         lines = args.string.splitlines()
     elif args.directory is not None:
         if args.org_doc is None:
-            print("Error directory needs to be paired with --org-doc")
+            print "Error directory needs to be paired with --org-doc"
             sys.exit(0)
         files = glob.glob(os.path.join(args.directory, "apfeed.LG.*"))
         files.sort(reverse=True)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
                 if not line[29:36] or not line[29:36].isdigit():
                     continue
                 elif int(line[29:36]) <= int(args.org_doc):
-                    print("Found in file: %s" % f)
+                    print "Found in file: %s" % f
                     break
 
     out = []
@@ -91,9 +91,9 @@ if __name__ == "__main__":
             out.append(apfd)
     out = sorted(out, key=lambda k: k['pmt_line_nbr'])
     if not out:
-        print("Records not found")
-        sys.exit(1);
+        print "Records not found"
+        sys.exit(1)
     if args.json:
-        print(json.dumps(out))
+        print json.dumps(out)
     else:
         pprint(out)
