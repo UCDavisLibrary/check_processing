@@ -11,6 +11,7 @@ Creates an apfeed file
 
 import argparse
 import ConfigParser
+import csv
 import datetime
 import logging
 import os
@@ -326,6 +327,12 @@ if __name__ == "__main__":
         help='Directory where xml_to_apfeed will'
         ' create apfeed file before upload(default:<cwd>/apfeed)'
     )
+    parser.add_argument(
+        '--report-dir',
+        default=os.path.join(cwd, "reports"),
+        help='Directory where xml_to_apfeed will'
+        ' create a report csv for External IDs(default:<cwd>/reports)'
+    )
     args = parser.parse_args()
 
     # Create and setup logging
@@ -391,9 +398,18 @@ if __name__ == "__main__":
         with open(apfeed_file_path, 'w') as apfeed_file:
             apfeed_file.write(apf.to_string())
 
+    # Generate report
+    if not os.path.isdir(args.report_dir):
+        os.mkdir(args.report_dir)
+    report_file = os.path.join(args.report_dir, "external_id.%d.csv" % mytime)
+    logging.info("Creating CSV %s", report_file)
     logging.info("External ID Totals")
-    for k in apf.eids:
-        logging.info("%s: $%.2f", k, apf.eids[k])
+    with open(report_file, 'wb') as report_file:
+        w = csv.writer(report_file)
+        w.writerow(('External ID', 'Total'))
+        for k in apf.eids:
+            logging.info("%s: $%.2f", k, apf.eids[k])
+            w.writerow((k,"%.2f" % apf.eids[k]))
 
     # Update config.ini for org_doc_nbr
     CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)

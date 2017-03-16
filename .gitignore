@@ -9,3 +9,4 @@ input/*
 htmlcov/*
 .coverage
 *.orig
+reports/*

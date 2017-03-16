@@ -93,6 +93,14 @@ if __name__ == "__main__":
     logger.addHandler(consoleHandler)
     logger.setLevel(numeric_level)
 
+    # Create and setup archive
+    archive_dir = args.archive_dir
+    if not os.path.isdir(archive_dir):
+        os.mkdir(archive_dir)
+    apfeed_arch_dir = os.path.join(archive_dir, "apfeed")
+    if not os.path.isdir(apfeed_arch_dir):
+        os.mkdir(apfeed_arch_dir)
+
     apfeed_file_path = args.apfeed_file
 
     # validate args
