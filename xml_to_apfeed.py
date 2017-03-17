@@ -156,7 +156,7 @@ class Apfeed(object):
         # Validate
         # Cannot have invoice date in the future
         if vend_assign_inv_date.date() > self.now.date():
-            logging.warn("Skipping(%s) Invoice date(%s) is in the future",
+            logging.error("Skipping(%s) Invoice date(%s) is in the future",
                          vend_assign_inv_nbr,
                          vend_assign_inv_date)
             self.errors += 1
@@ -392,6 +392,7 @@ if __name__ == "__main__":
 
     if apf.errors > 0:
         logging.info("Not creating apfeed because there were %d errors", apf.errors)
+        sys.exit(1)
     else:
         # Write the file
         logging.info("Writing %s", apfeed_file_path)
