@@ -411,11 +411,6 @@ if __name__ == "__main__":
             logging.info("%s: $%.2f", k, apf.eids[k])
             w.writerow((k,"%.2f" % apf.eids[k]))
 
-    # Update config.ini for org_doc_nbr
-    CONFIG.set("apfeed", "org_doc_nbr", apf.org_doc_nbr)
-    with open(CONFIG_PATH, 'w') as config_file:
-        CONFIG.write(config_file)
-
     # move XML to archive
     for xml in xmls:
         logging.info("Moving %s to archive", xml)

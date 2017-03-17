@@ -125,6 +125,10 @@ if __name__ == "__main__":
                         format="[%(levelname)-5.5s] %(message)s")
     logging.getLogger().addHandler(logging.StreamHandler())
 
+    with open(apfeed_file_path) as f:
+        content = f.readlines()
+        org_doc_num = content[-2][29:36]
+
     # Upload to server
     server = CONFIG.get("apfeed_scp_out", "server")
     user = CONFIG.get("apfeed_scp_out", "user")
@@ -137,6 +141,12 @@ if __name__ == "__main__":
     logging.info("Uploaded: %s", apfeed_file_path)
     shutil.move(apfeed_file_path, apfeed_arch_dir)
     logging.info("Moved %s to %s", apfeed_file_path, apfeed_arch_dir)
+
+    # Update config.ini for org_doc_nbr
+    logging.info("Updating config org_doc_nbr to %d", org_doc_nbr)
+    CONFIG.set("apfeed", "org_doc_nbr", org_doc_nbr)
+    with open(CONFIG_PATH, 'w') as config_file:
+        CONFIG.write(config_file)
 
     # set current log as latest log
     if os.path.lexists(latest_log):
