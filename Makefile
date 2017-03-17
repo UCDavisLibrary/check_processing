@@ -20,7 +20,7 @@ lint:
 	 pylint --rcfile=.pylintrc *.py
 
 .PHONY: install
-install : $(PREFIX)/update_alma.py $(PREFIX)/xml_to_apfeed.py $(PREFIX)/read_apfeed.py
+install : $(PREFIX)/update_alma.py $(PREFIX)/xml_to_apfeed.py $(PREFIX)/read_apfeed.py $(PREFIX)/upload_apfeed.py
 
 $(PREFIX)/xml_to_apfeed.py: $(CWD)/xml_to_apfeed.py
 	cp $(CWD)/xml_to_apfeed.py $(PREFIX)/xml_to_apfeed.py
@@ -30,3 +30,6 @@ $(PREFIX)/update_alma.py: $(CWD)/update_alma.py
 
 $(PREFIX)/read_apfeed.py: $(CWD)/read_apfeed.py
 	cp $(CWD)/read_apfeed.py $(PREFIX)/read_apfeed.py
+
+$(PREFIX)/upload_apfeed.py: $(CWD)/upload_apfeed.py
+	cp $(CWD)/upload_apfeed.py $(PREFIX)/upload_apfeed.py
