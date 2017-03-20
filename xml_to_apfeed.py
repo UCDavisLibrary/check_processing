@@ -157,8 +157,8 @@ class Apfeed(object):
         # Cannot have invoice date in the future
         if vend_assign_inv_date.date() > self.now.date():
             logging.error("Skipping(%s) Invoice date(%s) is in the future",
-                         vend_assign_inv_nbr,
-                         vend_assign_inv_date)
+                          vend_assign_inv_nbr,
+                          vend_assign_inv_date)
             self.errors += 1
             return
 
@@ -410,7 +410,7 @@ if __name__ == "__main__":
         w.writerow(('External ID', 'Total'))
         for k in apf.eids:
             logging.info("%s: $%.2f", k, apf.eids[k])
-            w.writerow((k,"%.2f" % apf.eids[k]))
+            w.writerow((k, "%.2f" % apf.eids[k]))
 
     # move XML to archive
     for xml in xmls:

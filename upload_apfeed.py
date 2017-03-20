@@ -125,9 +125,10 @@ if __name__ == "__main__":
                         format="[%(levelname)-5.5s] %(message)s")
     logging.getLogger().addHandler(logging.StreamHandler())
 
+    org_doc_nbr = CONFIG.get("apfeed", "org_doc_nbr")
     with open(apfeed_file_path) as f:
         content = f.readlines()
-        org_doc_num = content[-2][29:36]
+        org_doc_nbr = content[-2][29:36]
 
     # Upload to server
     server = CONFIG.get("apfeed_scp_out", "server")
