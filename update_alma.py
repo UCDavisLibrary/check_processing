@@ -11,6 +11,7 @@ Queries KFS to determine if those invoices are paid
 
 import argparse
 import ConfigParser
+import csv
 import json
 import logging
 import os
@@ -48,6 +49,7 @@ class ErpXml(object):
             {"xmlns": "http://com/exlibris/repository/acq/xmlbeans"}
         )
         self.inv_list = ET.SubElement(self.pcd, "invoice_list")
+        self.invs = []
         self.count = 0
 
     def to_string(self):
@@ -81,8 +83,14 @@ class ErpXml(object):
         amt = ET.SubElement(inv, "voucher_amount")
         add_subele_text(amt, 'currency', "USD")
         add_subele_text(amt, "sum", str(kfs['pay_amt']))
+        self.invs.append([kfs['doc_num'],
+                          kfs['vendor_id'],
+                          kfs['vendor_name'],
+                          num,
+                          kfs['check_num'],
+                          kfs['pay_amt'],
+                          kfs['pay_date']])
         self.count += 1
-
 
 def fetch_alma_json(offset, query=None):
     """
@@ -304,6 +312,16 @@ if __name__ == '__main__':
         default=1,
         help='percentage of tolerance allowed in paid amount from KFS to Alma'
     )
+    parser.add_argument(
+        '--report-dir',
+        default=os.path.join(cwd, "reports"),
+        help='report directory (default: <cwd>/reports'
+    )
+    parser.add_argument(
+        '--report-file',
+        default="check_information_report.%d.csv" % mytime,
+        help='report file name (default: check_information_report.<time>.csv)'
+    )
     args = parser.parse_args()
 
     tolerance = float(args.tolerance)/100
@@ -320,7 +338,7 @@ if __name__ == '__main__':
     logging.basicConfig(
         filename=log_file_path,
         level=numeric_level,
-        format="[%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
+        format="[%(levelname)-5.5s] %(message)s"
     )
     logger = logging.getLogger()
     consoleHandler = logging.StreamHandler()
@@ -363,6 +381,17 @@ if __name__ == '__main__':
             xml_file.write(erp.to_string())
         shutil.copy(output_file_path, input_archive)
         logging.info("Output XML created: %s", output_file_path)
+        # Generate report
+        if not os.path.isdir(args.report_dir):
+            os.mkdir(args.report_dir)
+        report_file = os.path.join(args.report_dir, args.report_file)
+        logging.info("Creating Check Information File: %s", report_file)
+        with open(report_file, 'wb') as report_file:
+            w = csv.writer(report_file)
+            w.writerow(('Doc #', 'Vender #', 'Vender Name', 'Invoice #', 'Check #', 'Amount', 'Date'))
+            for r in erp.invs:
+                w.writerow(r)
+
     else:
         logging.info("Nothing to update from ERP!")
 

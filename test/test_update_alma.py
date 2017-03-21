@@ -40,7 +40,10 @@ class Test_Update_Alma(unittest.TestCase):
                 'vendor' : { 'value' : 'PRQST'}}
         kfs = {'pay_date' : '20161220',
                'check_num' : 'V40047088',
-               'pay_amt' : 3810}
+               'pay_amt' : 3810,
+               'doc_num' : '42497084',
+               'vendor_id' : '122172-0',
+               'vendor_name' : 'PROQUEST LP'}
         erp.add_paid_invoice(inv_num, alma, kfs)
         self.assertEquals(erp.to_string(),'<?xml version="1.0" encoding="UTF-8"?>\n<payment_confirmation_data xmlns="http://com/exlibris/repository/acq/xmlbeans">\n   <invoice_list>\n      <invoice>\n         <invoice_number>US10046263</invoice_number>\n         <unique_identifier>4829238050003126</unique_identifier>\n         <invoice_date>20161205</invoice_date>\n         <vendor_code>PRQST</vendor_code>\n         <payment_status>PAID</payment_status>\n         <payment_voucher_date>20161220</payment_voucher_date>\n         <payment_voucher_number>V40047088</payment_voucher_number>\n         <voucher_amount>\n            <currency>USD</currency>\n            <sum>3810</sum>\n         </voucher_amount>\n      </invoice>\n   </invoice_list>\n</payment_confirmation_data>\n', "Added invoice to ERP XML failed")
 
