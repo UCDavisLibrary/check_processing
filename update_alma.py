@@ -21,6 +21,7 @@ import time
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
+from datetime import datetime
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus
@@ -83,13 +84,14 @@ class ErpXml(object):
         amt = ET.SubElement(inv, "voucher_amount")
         add_subele_text(amt, 'currency', "USD")
         add_subele_text(amt, "sum", str(kfs['pay_amt']))
+        pay_date = datetime.strptime(kfs['pay_date'], "%Y%m%d")
         self.invs.append([kfs['doc_num'],
                           kfs['vendor_id'],
                           kfs['vendor_name'],
                           num,
                           kfs['check_num'],
                           "%.2f" % float(kfs['pay_amt']),
-                          kfs['pay_date']])
+                          pay_date.strftime("%m/%d/%Y")])
         self.count += 1
 
 def fetch_alma_json(offset, query=None):
