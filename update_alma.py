@@ -88,7 +88,7 @@ class ErpXml(object):
                           kfs['vendor_name'],
                           num,
                           kfs['check_num'],
-                          kfs['pay_amt'],
+                          "%.2f" % float(kfs['pay_amt']),
                           kfs['pay_date']])
         self.count += 1
 
