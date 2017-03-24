@@ -69,6 +69,7 @@ class ErpXml(object):
         alma = data sent by alma
         kfs = hash sent by kfs
         """
+        logging.debug("kfs:[%s]", ','.join(map(str, kfs.values())))
         inv = ET.SubElement(self.inv_list, "invoice")
         add_subele_text(inv, "invoice_number", num)
         add_subele_text(inv, "unique_identifier", alma['id'])
@@ -84,14 +85,17 @@ class ErpXml(object):
         amt = ET.SubElement(inv, "voucher_amount")
         add_subele_text(amt, 'currency', "USD")
         add_subele_text(amt, "sum", str(kfs['pay_amt']))
-        pay_date = datetime.strptime(kfs['pay_date'], "%Y%m%d")
+        pay_date = ""
+        if kfs['pay_date']:
+            pay_date = datetime.strptime(kfs['pay_date'], "%Y%m%d")
+            pay_date = pay_date.strftime("%m/%d/%Y")
         self.invs.append([kfs['doc_num'],
                           kfs['vendor_id'],
                           kfs['vendor_name'],
                           num,
                           kfs['check_num'],
                           "%.2f" % float(kfs['pay_amt']),
-                          pay_date.strftime("%m/%d/%Y")])
+                          pay_date])
         self.count += 1
 
 def fetch_alma_json(offset, query=None):
@@ -117,6 +121,22 @@ def fetch_alma_json(offset, query=None):
     except HTTPError as err:
         logging.error('HTTPError = ' + str(err.code))
 
+def fetch_vendor_code(code):
+    """Uses Alma Web Api to get vendor id"""
+    url = "https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote_plus(code)
+    queryParams = '?' + urlencode({
+        quote_plus('format'): 'json',
+        quote_plus('apikey') : CONFIG.get("alma", "api_key")
+    })
+    request = Request(url + queryParams)
+    request.get_method = lambda: 'GET'
+    try:
+        request_str = urlopen(request).read()
+        data = json.loads(request_str)
+        a, b = data['additional_code'].split(" ")
+        return code, a.lstrip("0") + '-' + b[0]
+    except HTTPError as err:
+        logging.error('HTTPError = ' + str(err.code))
 
 def list_to_dict(key_function, values):
     """
@@ -149,20 +169,35 @@ def get_waiting_invoices(query):
     # Generates a list of ids along
     # with remove any that don't have the current payment status
     inv_nums = []
+    vendor_codes = []
     for invoice in invs[:]:
         invoice['number'] = invoice['number'].strip()
-        inv_nums.append(invoice['number'])
         if invoice['payment']['payment_status']['value'] != "NOT_PAID":
             logging.warn(
                 "Invoice %s payment status is not 'NOT_PAID'",
                 invoice['number']
             )
             invs.remove(invoice)
+        else:
+            inv_nums.append(invoice['number'])
+            if  invoice['vendor']['value'] not in vendor_codes:
+                vendor_codes.append(invoice['vendor']['value'])
 
     # Remap list to a dictionary using id as key
     invs = list_to_dict(lambda a: a['number'], invs)
-    return invs, inv_nums
 
+    # Get Vendors and their Vendor Ids
+    vendors = dict()
+    inv_vend_ids = dict()
+    results = ThreadPool(20).imap_unordered(fetch_vendor_code, vendor_codes)
+    for code, vend_id  in results:
+        if error is None:
+            vendors[code] = vend_id
+        else:
+            logging.error("error fetching: %s", error)
+    for num in inv_nums:
+        inv_vend_ids[num] = vendors[invs[num]['vendor']['value']]
+    return invs, inv_nums, inv_vend_ids
 
 def kfs_query(ids):
     """Queries Accounting KFS Database to see if the invoices are paid"""
@@ -232,35 +267,51 @@ def kfs_query(ids):
     logging.debug("Querying invoices: %s", q_str)
 
     if cur.execute(query):
-        for res in cur:
-            (doc_num,
-             vendor_id,
-             vendor_name,
-             num,
-             check_num,
-             pay_amt,
-             pay_date,
-             doc_type) = res
-            if num in kfs_invs:
+        return cur
+    else:
+        logging.error("KFS Query Failed")
+    con.close()
+
+    return kfs_invs
+
+def process_query(cur, vendors):
+    """
+    Takes connection cursor and generates dictionary of query
+    Also matches them by vendor id
+    """
+    kfs_invs = dict()
+    skipped = []
+    for res in cur:
+        keys = ['doc_num', 'vendor_id', 'vendor_name', 'num',
+                'check_num', 'pay_amt', 'pay_date', 'doc_type']
+        d = dict(zip(keys, res))
+        num = d['num']
+        if vendors and num in vendors and vendors[num] != d['vendor_id']:
+            logging.debug("Invoice(%s) didn't have right vendor_id skipped"
+                          " Expected %s got: %s", num, vendors[num], d['vendor_id'])
+            continue
+        if num in kfs_invs:
+            # check if the duplicate is the exact same
+            if equal_dicts(kfs_invs[num], d, ['doc_num']) and num not in skipped:
+                logging.info("Invoice(%s) appears multiple times"
+                             " in KFS merging results", num)
+            else:
                 logging.warn(
                     "Multiple invoice numbers detected: "
                     "%s: Skipping invoice",
                     num
                 )
                 kfs_invs.pop(num)
-            else:
-                kfs_invs[num] = {'doc_num': doc_num,
-                                 'vendor_id': vendor_id,
-                                 'vendor_name': vendor_name,
-                                 'check_num': check_num,
-                                 'pay_amt': pay_amt,
-                                 'pay_date': pay_date,
-                                 'doc_type' : doc_type}
-    else:
-        logging.error("KFS Query Failed")
-    con.close()
-
+                skipped.append(num)
+        else:
+            kfs_invs[num] = d
     return kfs_invs
+
+def equal_dicts(d1, d2, ignore_keys):
+    """compares two diciontaries ignoring specific keys"""
+    d1_filtered = dict((k, v) for k,v in d1.iteritems() if k not in ignore_keys)
+    d2_filtered = dict((k, v) for k,v in d2.iteritems() if k not in ignore_keys)
+    return d1_filtered == d2_filtered
 
 # pylint: disable=C0103
 if __name__ == '__main__':
@@ -357,10 +408,12 @@ if __name__ == '__main__':
         os.mkdir(input_archive)
 
     # Get Alma invoices
-    invoices, nums = get_waiting_invoices(args.query)
+    invoices, nums, inv_vend_ids = get_waiting_invoices(args.query)
 
     # Query KFS Oracle DB
-    for inv_num, kfs_inv in sorted(kfs_query(nums).iteritems()):
+    cur = kfs_query(nums)
+    invs = process_query(cur, inv_vend_ids)
+    for inv_num, kfs_inv in sorted(invs.iteritems()):
         if inv_num not in invoices:
             logging.warn("%s not found in Alma but is in KFS: Skipping", inv_num)
             continue
