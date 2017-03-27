@@ -124,17 +124,17 @@ def fetch_alma_json(offset, query=None):
 def fetch_vendor_code(code):
     """Uses Alma Web Api to get vendor id"""
     url = "https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote_plus(code)
-    queryParams = '?' + urlencode({
+    query_params = '?' + urlencode({
         quote_plus('format'): 'json',
         quote_plus('apikey') : CONFIG.get("alma", "api_key")
     })
-    request = Request(url + queryParams)
+    request = Request(url + query_params)
     request.get_method = lambda: 'GET'
     try:
         request_str = urlopen(request).read()
         data = json.loads(request_str)
-        a, b = data['additional_code'].split(" ")
-        return code, a.lstrip("0") + '-' + b[0]
+        first, second = data['additional_code'].split(" ")
+        return code, first.lstrip("0") + '-' + second[0]
     except HTTPError as err:
         logging.error('HTTPError = ' + str(err.code))
 
@@ -177,11 +177,9 @@ def get_waiting_invoices(query):
                 "Invoice %s payment status is not 'NOT_PAID'",
                 invoice['number']
             )
-            invs.remove(invoice)
-        else:
-            inv_nums.append(invoice['number'])
-            if  invoice['vendor']['value'] not in vendor_codes:
-                vendor_codes.append(invoice['vendor']['value'])
+        inv_nums.append(invoice['number'])
+        if  invoice['vendor']['value'] not in vendor_codes:
+            vendor_codes.append(invoice['vendor']['value'])
 
     # Remap list to a dictionary using id as key
     invs = list_to_dict(lambda a: a['number'], invs)
@@ -284,15 +282,15 @@ def process_query(cur, vendors):
     for res in cur:
         keys = ['doc_num', 'vendor_id', 'vendor_name', 'num',
                 'check_num', 'pay_amt', 'pay_date', 'doc_type']
-        d = dict(zip(keys, res))
-        num = d['num']
-        if vendors and num in vendors and vendors[num] != d['vendor_id']:
+        kfs_d = dict(zip(keys, res))
+        num = kfs_d['num']
+        if vendors and num in vendors and vendors[num] != kfs_d['vendor_id']:
             logging.debug("Invoice(%s) didn't have right vendor_id skipped"
-                          " Expected %s got: %s", num, vendors[num], d['vendor_id'])
+                          " Expected %s got: %s", num, vendors[num], kfs_d['vendor_id'])
             continue
         if num in kfs_invs:
             # check if the duplicate is the exact same
-            if equal_dicts(kfs_invs[num], d, ['doc_num']) and num not in skipped:
+            if equal_dicts(kfs_invs[num], kfs_d, ['doc_num']) and num not in skipped:
                 logging.info("Invoice(%s) appears multiple times"
                              " in KFS merging results", num)
             else:
@@ -304,13 +302,13 @@ def process_query(cur, vendors):
                 kfs_invs.pop(num)
                 skipped.append(num)
         else:
-            kfs_invs[num] = d
+            kfs_invs[num] = kfs_d
     return kfs_invs
 
-def equal_dicts(d1, d2, ignore_keys):
+def equal_dicts(dic1, dic2, ignore_keys):
     """compares two diciontaries ignoring specific keys"""
-    d1_filtered = dict((k, v) for k,v in d1.iteritems() if k not in ignore_keys)
-    d2_filtered = dict((k, v) for k,v in d2.iteritems() if k not in ignore_keys)
+    d1_filtered = dict((k, v) for k, v in dic1.iteritems() if k not in ignore_keys)
+    d2_filtered = dict((k, v) for k, v in dic2.iteritems() if k not in ignore_keys)
     return d1_filtered == d2_filtered
 
 # pylint: disable=C0103
@@ -408,12 +406,12 @@ if __name__ == '__main__':
         os.mkdir(input_archive)
 
     # Get Alma invoices
-    invoices, nums, inv_vend_ids = get_waiting_invoices(args.query)
+    invoices, nums, inv_vendids = get_waiting_invoices(args.query)
 
     # Query KFS Oracle DB
-    cur = kfs_query(nums)
-    invs = process_query(cur, inv_vend_ids)
-    for inv_num, kfs_inv in sorted(invs.iteritems()):
+    cursor = kfs_query(nums)
+    kfs_hash = process_query(cursor, inv_vendids)
+    for inv_num, kfs_inv in sorted(kfs_hash.iteritems()):
         if inv_num not in invoices:
             logging.warn("%s not found in Alma but is in KFS: Skipping", inv_num)
             continue
@@ -443,7 +441,13 @@ if __name__ == '__main__':
         logging.info("Creating Check Information File: %s", report_file)
         with open(report_file, 'wb') as report_file:
             w = csv.writer(report_file)
-            w.writerow(('Doc #', 'Vender #', 'Vender Name', 'Invoice #', 'Check #', 'Amount', 'Date'))
+            w.writerow(('Doc #',
+                        'Vender #',
+                        'Vender Name',
+                        'Invoice #',
+                        'Check #',
+                        'Amount',
+                        'Date'))
             for r in erp.invs:
                 w.writerow(r)
 
