@@ -103,7 +103,7 @@ class TestBase(unittest.TestCase):
         self.inv_str(istr, 402, 403, 'N', 'APPLY_DISC_IND')
         self.inv_str(istr, 403, 404, 'N', 'EFT_OVERRIDE_IND')
 
-        self.assertEquals(apf.to_string().count("\n"), 10, "apf to_string() did not have the correct number of lines (got: %d, expecting: 10)" % apf.to_string().count("\n"))
+        self.assertEquals(str(apf).count("\n"), 10, "apf  did not have the correct number of lines (got: %d, expecting: 10)" % str(apf).count("\n"))
 
         apf.add_inv(invs[2])
         self.inv_str(apf.invoices[9], 344, 345, 'Y', 'ATTACHMENT_REQ_IND')

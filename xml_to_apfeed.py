@@ -213,7 +213,7 @@ class Apfeed(object):
             istr += vend_nbr[0:10]
             istr += "{:15}".format(vend_assign_inv_nbr[0:15])
             istr += vend_assign_inv_date.strftime("%Y%m%d")
-            istr += addr_select_vend_nbr
+            istr += addr_select_vend_nbr[0:14]
             istr += pmt_remit_nm
             istr += pmt_remit_line_1_addr
             istr += pmt_remit_line_2_addr
@@ -254,7 +254,7 @@ class Apfeed(object):
             self.count += 1
 
 
-    def to_string(self):
+    def __str__(self):
         """To string format which can be printed"""
         out = "**HEADERLGGENERALLIBRARY %s\n" % self.now.strftime(
             "%Y%m%d%H%M%S"
@@ -397,7 +397,7 @@ if __name__ == "__main__":
         # Write the file
         logging.info("Writing %s", apfeed_file_path)
         with open(apfeed_file_path, 'w') as apfeed_file:
-            apfeed_file.write(apf.to_string())
+            apfeed_file.write(str(apf))
 
     # Generate report
     if not os.path.isdir(args.report_dir):

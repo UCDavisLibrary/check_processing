@@ -25,7 +25,7 @@ class Test_Update_Alma(unittest.TestCase):
         nums = ['US10046263']
         vendors = {}
         cur = update_alma.kfs_query(nums)
-        kfs_hash = update_alma.process_query(cur, vendors)
+        kfs_hash = update_alma.process_query(cur, vendors, 0)
         test_input_xml = os.path.join(test_dir, "xml", "test.input.xml")
         test_input = ET.parse(test_input_xml).getroot()
         invoice_list = test_input.find("./", ns)
@@ -48,19 +48,19 @@ class Test_Update_Alma(unittest.TestCase):
            'pay_date': '20170321',
            'vendor_id': '8563-0',
            'vendor_name': 'YANKEE BOOK PEDDLER INC'}
-        invs = update_alma.process_query(cur, vendors)
+        invs = update_alma.process_query(cur, vendors, 0)
         self.assertEquals(invs['10076'], base , "process query should work even if vendor is not specified")
         cur = [['43529685','8563-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV'], ['43529685','8563-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV']]
-        invs = update_alma.process_query(cur, vendors)
+        invs = update_alma.process_query(cur, vendors, 0)
         self.assertEquals(invs['10076'], base , "process query should handle duplicates")
 
         cur = [['43529685','853-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV'], ['43529685','8563-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV']]
-        invs = update_alma.process_query(cur, vendors)
+        invs = update_alma.process_query(cur, vendors, 0)
         self.assertEquals(invs, {} , "process_query if there are two with different vendor id don't put them")
 
         vendors = {'10076': '8563-0'}
         cur = [['43529685','853-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV'], ['43529685','8563-0','YANKEE BOOK PEDDLER INC','10076','C10647617','295.74','20170321','DV']]
-        invs = update_alma.process_query(cur, vendors)
+        invs = update_alma.process_query(cur, vendors, 0)
         self.assertEquals(invs['10076'], base , "process_query picks out the correct one because of vendor id")
 
     def test_erp_xml(self):

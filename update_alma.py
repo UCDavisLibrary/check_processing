@@ -272,13 +272,13 @@ def kfs_query(ids):
 
     return kfs_invs
 
-def process_query(cur, vendors):
+def process_query(cur, vendors, interactive):
     """
     Takes connection cursor and generates dictionary of query
     Also matches them by vendor id
     """
     kfs_invs = dict()
-    skipped = []
+    out = dict()
     for res in cur:
         keys = ['doc_num', 'vendor_id', 'vendor_name', 'num',
                 'check_num', 'pay_amt', 'pay_date', 'doc_type']
@@ -289,21 +289,43 @@ def process_query(cur, vendors):
                           " Expected %s got: %s", num, vendors[num], kfs_d['vendor_id'])
             continue
         if num in kfs_invs:
+            logging.info("Multiple invoice numbers detected: ")
             # check if the duplicate is the exact same
-            if equal_dicts(kfs_invs[num], kfs_d, ['doc_num']) and num not in skipped:
-                logging.info("Invoice(%s) appears multiple times"
-                             " in KFS merging results", num)
-            else:
-                logging.warn(
-                    "Multiple invoice numbers detected: "
-                    "%s: Skipping invoice",
-                    num
-                )
-                kfs_invs.pop(num)
-                skipped.append(num)
+            dup = False
+            for kin in kfs_invs[num]:
+                dup = dup or equal_dicts(kin, kfs_d, ['doc_num'])
+            if not dup:
+                kfs_invs[num].append(kfs_d)
         else:
-            kfs_invs[num] = kfs_d
-    return kfs_invs
+            kfs_invs[num] = [kfs_d]
+
+    for key, kinv in kfs_invs.iteritems():
+        if len(kinv) == 1:
+            out[key] = kinv[0]
+        elif interactive:
+            logging.info("Invoice(%s) has multiple entries in KFS", key)
+            logging.info("[0] None of the above")
+            count = 1
+            for opts in kinv:
+                logging.info("[%d] %s", count, "|".join(str(v) for v in opts.values()))
+                count += 1
+            choice = 0
+            while True:
+                inp = raw_input("Your choice:")
+                if inp.isdigit() and int(inp) <= len(kinv):
+                    choice = int(inp)
+                    break
+                else:
+                    logging.warn("Value not permitted")
+            if choice == 0:
+                logging.info("Skipping invoice(%s)", key)
+            else:
+                logging.info("Using choice %d", choice)
+                out[key] = kinv[choice - 1]
+        else:
+            logging.warn("Multiple invoices with different data: Skipping invoice(%s)",
+                         key)
+    return out
 
 def equal_dicts(dic1, dic2, ignore_keys):
     """compares two diciontaries ignoring specific keys"""
@@ -373,6 +395,11 @@ if __name__ == '__main__':
         default="check_information_report.%d.csv" % mytime,
         help='report file name (default: check_information_report.<time>.csv)'
     )
+    parser.add_argument(
+        '-i', '--interactive',
+        action='store_true',
+        default=False
+    )
     args = parser.parse_args()
 
     tolerance = float(args.tolerance)/100
@@ -410,7 +437,7 @@ if __name__ == '__main__':
 
     # Query KFS Oracle DB
     cursor = kfs_query(nums)
-    kfs_hash = process_query(cursor, inv_vendids)
+    kfs_hash = process_query(cursor, inv_vendids, args.interactive)
     for inv_num, kfs_inv in sorted(kfs_hash.iteritems()):
         if inv_num not in invoices:
             logging.warn("%s not found in Alma but is in KFS: Skipping", inv_num)
