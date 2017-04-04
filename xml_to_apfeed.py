@@ -47,9 +47,45 @@ class Apfeed(object):
         self.count = 0
         self.invoices = []
         self.org_doc_nbr = int(CONFIG.get("apfeed", "org_doc_nbr"))
-        self.emp_ind = 'N'
+        self.emp_ind = CONFIG.get('apfeed', 'emp_ind')
         self.errors = 0
         self.eids = dict()
+
+        # will be set later
+        self.goods_received_dt = " " * 8
+        self.attachment_req_ind = 'N'
+        self.pmt_tax_cd_inv = '0'
+        self.vend_assign_inv_nbr = None
+        self.vend_nbr = None
+        self.addr_select_vend_nbr = None
+        self.vend_assign_inv_date = None
+
+        # Constants
+        self.pmt_remit_nm = " " * 40
+        self.pmt_remit_line_1_addr = " " * 40
+        self.pmt_remit_line_2_addr = " " * 40
+        self.pmt_remit_line_3_addr = " " * 40
+        self.pmt_remit_city_nm = " " * 40
+        self.pmt_remit_st_cd = " " * 2
+        self.pmt_remit_zip_cd = " " * 11
+        self.pmt_remit_cntry_cd = " " * 2
+        self.vend_st_res_ind = " "
+        self.inv_received_dt = " " * 8
+        self.org_shp_zip_cd = CONFIG.get("apfeed", "org_shp_zip_cd")
+        self.org_shp_state_cd = CONFIG.get("apfeed", "org_shp_state_cd")
+        self.pmt_grp_cd = CONFIG.get("apfeed", "pmt_grp_cd")
+        self.inv_fob_cd = " " * 2
+        self.disc_term_cd = " " * 2
+        self.scheduled_pmt_dt = self.now.strftime("%Y%m%d")
+        self.pmt_non_check_ind = CONFIG.get("apfeed", "pmt_non_check_ind")
+        self.fin_coa_cd = CONFIG.get("apfeed", "fin_coa_cd")
+        self.sub_acct_nbr = " " * 5
+        self.fin_object_cd = CONFIG.get('apfeed', 'fin_object_cd')
+        self.fin_sub_obj_cd = " " * 3
+        self.project_cd = " " * 10
+        self.apply_disc_ind = CONFIG.get('apfeed', 'apply_disc_ind')
+        self.eft_override_ind = CONFIG.get('apfeed', 'eft_override_ind')
+        self.ap_pmt_purpose_desc = " " * 120
 
     def report_line(self, eid, amt):
         """Generated a dictionary for reporting on external ids"""
@@ -96,162 +132,140 @@ class Apfeed(object):
 
         self.org_doc_nbr += 1
         # Foreach of the invoice lines
-        vend_nbr = inv.find("exl:vendor_additional_code", NSP).text
-        vend_assign_inv_nbr = inv.find("exl:invoice_number", NSP).text
-        logging.debug("Invoice Number: %s", vend_assign_inv_nbr)
-        vend_assign_inv_date = datetime.datetime.strptime(
+        self.vend_nbr = inv.find("exl:vendor_additional_code", NSP).text
+        self.vend_assign_inv_nbr = inv.find("exl:invoice_number", NSP).text
+        logging.debug("Invoice Number: %s", self.vend_assign_inv_nbr)
+        self.vend_assign_inv_date = datetime.datetime.strptime(
             inv.find("exl:invoice_date", NSP).text,
             "%m/%d/%Y"
         )
-        addr_select_vend_nbr = inv.find(
+        self.addr_select_vend_nbr = inv.find(
             "exl:vendor_additional_code", NSP
         ).text.replace(" ", "")
-        pmt_remit_nm = " " * 40
-        pmt_remit_line_1_addr = " " * 40
-        pmt_remit_line_2_addr = " " * 40
-        pmt_remit_line_3_addr = " " * 40
-        pmt_remit_city_nm = " " * 40
-        pmt_remit_st_cd = " " * 2
-        pmt_remit_zip_cd = " " * 11
-        pmt_remit_cntry_cd = " " * 2
-        vend_st_res_ind = " "
-        inv_received_dt = " " * 8
+
+        # Attachment
         note_list = inv.find("exl:noteList", NSP)
         if note_list is None:
             create_dt = inv.find("exl:invoice_ownered_entity/exl:creationDate", NSP)
-            if create_dt is None:
-                goods_received_dt = " " * 8
-            else:
-                goods_received_dt = create_dt.text
-            attachment_req_ind = 'N'
+            if create_dt is not None:
+                self.goods_received_dt = create_dt.text
         else:
-            goods_received_dt = note_list.find(
+            self.goods_received_dt = note_list.find(
                 "exl:note/exl:owneredEntity/exl:creationDate", NSP
             ).text
             if note_list.find("exl:note/exl:content", NSP).text == "ATTACHMENT":
-                attachment_req_ind = 'Y'
-            else:
-                attachment_req_ind = 'N'
-        org_shp_zip_cd = CONFIG.get("apfeed", "org_shp_zip_cd")
-        org_shp_state_cd = CONFIG.get("apfeed", "org_shp_state_cd")
-        pmt_grp_cd = CONFIG.get("apfeed", "pmt_grp_cd")
-        inv_fob_cd = " " * 2
-        disc_term_cd = " " * 2
-        scheduled_pmt_dt = self.now.strftime("%Y%m%d")
-        pmt_non_check_ind = CONFIG.get("apfeed", "pmt_non_check_ind")
-        fin_coa_cd = CONFIG.get("apfeed", "fin_coa_cd")
-        sub_acct_nbr = " " * 5
-        fin_object_cd = CONFIG.get('apfeed', 'fin_object_cd')
-        fin_sub_obj_cd = " " * 3
-        project_cd = " " * 10
+                self.attachment_req_ind = 'Y'
+
         vat_amt = float(
             inv.find("exl:vat_info/exl:vat_amount", NSP).text
         )
-        pmt_tax_cd_inv = 'A' if vat_amt > 0 else '0'
-        apply_disc_ind = CONFIG.get('apfeed', 'apply_disc_ind')
-        eft_override_ind = CONFIG.get('apfeed', 'eft_override_ind')
-        ap_pmt_purpose_desc = " " * 120
+        if vat_amt > 0:
+            self.pmt_tax_cd_inv = 'A'
         inv_list = inv.findall("./exl:invoice_line_list/exl:invoice_line", NSP)
 
         # Validate
         # Cannot have invoice date in the future
-        if vend_assign_inv_date.date() > self.now.date():
+        if self.vend_assign_inv_date.date() > self.now.date():
             logging.error("Skipping(%s) Invoice date(%s) is in the future",
-                          vend_assign_inv_nbr,
-                          vend_assign_inv_date)
+                          self.vend_assign_inv_nbr,
+                          self.vend_assign_inv_date)
             self.errors += 1
             return
 
+        # Per line creation
         for inv_line in inv_list:
-            pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
-            logging.debug("- Line Number: %s", pmt_line_nbr)
-            account_nbr = inv_line.find(
-                "exl:fund_info_list/exl:fund_info/exl:external_id",
+            self.line(inv_line)
+
+    def line(self, inv_line):
+        """Adds it by line"""
+        pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
+        logging.debug("- Line Number: %s", pmt_line_nbr)
+        account_nbr = inv_line.find(
+            "exl:fund_info_list/exl:fund_info/exl:external_id",
+            NSP
+        ).text
+        po_line_nbr = inv_line.find(
+            "exl:po_line_info/exl:po_line_number",
+            NSP
+        )
+        if po_line_nbr is None:
+            org_reference_id = " " * 8
+        else:
+            org_reference_id = strstr(po_line_nbr.text, '-')
+        pmt_amt = int(float(
+            inv_line.find(
+                "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
                 NSP
             ).text
-            po_line_nbr = inv_line.find(
-                "exl:po_line_info/exl:po_line_number",
-                NSP
-            )
-            if po_line_nbr is None:
-                org_reference_id = " " * 8
-            else:
-                org_reference_id = strstr(po_line_nbr.text, '-')
-            pmt_amt = int(float(
-                inv_line.find(
-                    "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
-                    NSP
-                ).text
-            ) * 100)
+        ) * 100)
 
-            # External ID report
-            self.report_line(account_nbr, pmt_amt)
+        # External ID report
+        self.report_line(account_nbr, pmt_amt)
 
-            note = inv_line.find("exl:note", NSP)
-            if note is not None and re.match(r"^UTAX", note.text):
-                pmt_tax_cd = 'C'
-            else:
-                pmt_tax_cd = pmt_tax_cd_inv
+        note = inv_line.find("exl:note", NSP)
+        if note is not None and re.match(r"^UTAX", note.text):
+            pmt_tax_cd = 'C'
+        else:
+            pmt_tax_cd = self.pmt_tax_cd_inv
 
-            #FIXME Eventually move this to a class
-            # Validate
-            if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
-                if (not goods_received_dt.strip()
-                        or not org_shp_zip_cd.strip()
-                        or not org_shp_state_cd.strip()):
-                    logging.warn("Conditionally required field is empty:"
-                                 "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
-                                 "ORG_SHP_STATE_CD required when PMT_TAX_CD"
-                                 " is B or C - for invoice: %s", vend_assign_inv_nbr)
-                    self.errors += 1
-                    return
+        # Validate
+        if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
+            if (not self.goods_received_dt.strip()
+                    or not self.org_shp_zip_cd.strip()
+                    or not self.org_shp_state_cd.strip()):
+                logging.error("Conditionally required field is empty:"
+                              "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
+                              "ORG_SHP_STATE_CD required when PMT_TAX_CD"
+                              " is B or C - for invoice: %s", self.vend_assign_inv_nbr)
+                self.errors += 1
+                return
 
-            istr = "GENERALLIBRARY "
-            istr += self.now.strftime("%Y%m%d%H%M%S")
-            istr += "{:07d}".format(self.org_doc_nbr)
-            istr += self.emp_ind
-            istr += vend_nbr[0:10]
-            istr += "{:15}".format(vend_assign_inv_nbr[0:15])
-            istr += vend_assign_inv_date.strftime("%Y%m%d")
-            istr += addr_select_vend_nbr[0:14]
-            istr += pmt_remit_nm
-            istr += pmt_remit_line_1_addr
-            istr += pmt_remit_line_2_addr
-            istr += pmt_remit_line_3_addr
-            istr += pmt_remit_city_nm
-            istr += pmt_remit_st_cd
-            istr += pmt_remit_zip_cd
-            istr += pmt_remit_cntry_cd
-            istr += vend_st_res_ind
-            istr += inv_received_dt
-            istr += goods_received_dt[0:8]
-            istr += org_shp_zip_cd[0:11]
-            istr += " "
-            istr += org_shp_state_cd[0:2]
-            istr += pmt_grp_cd
-            istr += inv_fob_cd
-            istr += disc_term_cd
-            istr += " "
-            istr += scheduled_pmt_dt
-            istr += pmt_non_check_ind
-            istr += attachment_req_ind
-            istr += "{:05d}".format(pmt_line_nbr)
-            istr += fin_coa_cd
-            istr += " "
-            istr += account_nbr[0:7]
-            istr += sub_acct_nbr
-            istr += fin_object_cd
-            istr += fin_sub_obj_cd
-            istr += project_cd
-            istr += "{:8}".format(org_reference_id[0:8])
-            istr += pmt_tax_cd
-            istr += "{:012d}".format(pmt_amt)
-            istr += apply_disc_ind
-            istr += eft_override_ind
-            istr += ap_pmt_purpose_desc
+        istr = "GENERALLIBRARY "
+        istr += self.now.strftime("%Y%m%d%H%M%S")
+        istr += "{:07d}".format(self.org_doc_nbr)
+        istr += self.emp_ind
+        istr += self.vend_nbr[0:10]
+        istr += "{:15}".format(self.vend_assign_inv_nbr[0:15])
+        istr += self.vend_assign_inv_date.strftime("%Y%m%d")
+        istr += self.addr_select_vend_nbr[0:14]
+        istr += self.pmt_remit_nm
+        istr += self.pmt_remit_line_1_addr
+        istr += self.pmt_remit_line_2_addr
+        istr += self.pmt_remit_line_3_addr
+        istr += self.pmt_remit_city_nm
+        istr += self.pmt_remit_st_cd
+        istr += self.pmt_remit_zip_cd
+        istr += self.pmt_remit_cntry_cd
+        istr += self.vend_st_res_ind
+        istr += self.inv_received_dt
+        istr += self.goods_received_dt[0:8]
+        istr += self.org_shp_zip_cd[0:11]
+        istr += " "
+        istr += self.org_shp_state_cd[0:2]
+        istr += self.pmt_grp_cd
+        istr += self.inv_fob_cd
+        istr += self.disc_term_cd
+        istr += " "
+        istr += self.scheduled_pmt_dt
+        istr += self.pmt_non_check_ind
+        istr += self.attachment_req_ind
+        istr += "{:05d}".format(pmt_line_nbr)
+        istr += self.fin_coa_cd
+        istr += " "
+        istr += account_nbr[0:7]
+        istr += self.sub_acct_nbr
+        istr += self.fin_object_cd
+        istr += self.fin_sub_obj_cd
+        istr += self.project_cd
+        istr += "{:8}".format(org_reference_id[0:8])
+        istr += pmt_tax_cd
+        istr += "{:012d}".format(pmt_amt)
+        istr += self.apply_disc_ind
+        istr += self.eft_override_ind
+        istr += self.ap_pmt_purpose_desc
 
-            self.invoices.append(istr)
-            self.count += 1
+        self.invoices.append(istr)
+        self.count += 1
 
 
     def __str__(self):
