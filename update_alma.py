@@ -24,8 +24,9 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
-from urllib import urlencode, quote_plus
+from urllib import urlencode, quote_plus, quote
 
+from pprint import pprint
 import cx_Oracle
 
 # Read config from config.ini
@@ -123,7 +124,7 @@ def fetch_alma_json(offset, query=None):
 
 def fetch_vendor_code(code):
     """Uses Alma Web Api to get vendor id"""
-    url = "https://api-eu.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote_plus(code)
+    url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote(code)
     query_params = '?' + urlencode({
         quote_plus('format'): 'json',
         quote_plus('apikey') : CONFIG.get("alma", "api_key")
@@ -136,6 +137,8 @@ def fetch_vendor_code(code):
         first, second = data['additional_code'].split(" ")
         return code, first.lstrip("0") + '-' + second[0]
     except HTTPError as err:
+        logging.error("Trying to get json of vendor code: " + code)
+        logging.error("Failed to get: " + url + query_params)
         logging.error('HTTPError = ' + str(err.code))
 
 def list_to_dict(key_function, values):
