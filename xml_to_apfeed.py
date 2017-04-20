@@ -59,6 +59,7 @@ class Apfeed(object):
         self.vend_nbr = None
         self.addr_select_vend_nbr = None
         self.vend_assign_inv_date = None
+        self.inv_header = ""
 
         # Constants
         self.pmt_remit_nm = " " * 40
@@ -94,6 +95,21 @@ class Apfeed(object):
             self.eids[eid] += amt
         else:
             self.eids[eid] = amt
+
+    def note_list(self, inv):
+        """figure out whether or not there are attachments"""
+        note_list = inv.find("exl:noteList", NSP)
+        if note_list is None:
+            create_dt = inv.find("exl:invoice_ownered_entity/exl:creationDate", NSP)
+            if create_dt is not None:
+                self.goods_received_dt = create_dt.text
+        else:
+            self.goods_received_dt = note_list.find(
+                "exl:note/exl:owneredEntity/exl:creationDate", NSP
+            ).text
+            content = note_list.find("exl:note/exl:content", NSP).text
+            if content == "ATTACHMENT":
+                self.attachment_req_ind = 'Y'
 
     def add_inv(self, inv):
         """
@@ -143,36 +159,50 @@ class Apfeed(object):
             "exl:vendor_additional_code", NSP
         ).text.replace(" ", "")
 
-        # Attachment
-        note_list = inv.find("exl:noteList", NSP)
-        if note_list is None:
-            create_dt = inv.find("exl:invoice_ownered_entity/exl:creationDate", NSP)
-            if create_dt is not None:
-                self.goods_received_dt = create_dt.text
-        else:
-            self.goods_received_dt = note_list.find(
-                "exl:note/exl:owneredEntity/exl:creationDate", NSP
-            ).text
-            if note_list.find("exl:note/exl:content", NSP).text == "ATTACHMENT":
-                self.attachment_req_ind = 'Y'
+        self.note_list(inv)
 
         vat_amt = float(
             inv.find("exl:vat_info/exl:vat_amount", NSP).text
         )
         if vat_amt > 0:
             self.pmt_tax_cd_inv = 'A'
-        inv_list = inv.findall("./exl:invoice_line_list/exl:invoice_line", NSP)
 
-        # Validate
-        # Cannot have invoice date in the future
-        if self.vend_assign_inv_date.date() > self.now.date():
-            logging.error("Skipping(%s) Invoice date(%s) is in the future",
-                          self.vend_assign_inv_nbr,
-                          self.vend_assign_inv_date)
-            self.errors += 1
+        if self.validate() > 0:
             return
 
+        istr = "GENERALLIBRARY "
+        istr += self.now.strftime("%Y%m%d%H%M%S")
+        istr += "{:07d}".format(self.org_doc_nbr)
+        istr += self.emp_ind
+        istr += self.vend_nbr[0:10]
+        istr += "{:15}".format(self.vend_assign_inv_nbr[0:15])
+        istr += self.vend_assign_inv_date.strftime("%Y%m%d")
+        istr += self.addr_select_vend_nbr[0:14]
+        istr += self.pmt_remit_nm
+        istr += self.pmt_remit_line_1_addr
+        istr += self.pmt_remit_line_2_addr
+        istr += self.pmt_remit_line_3_addr
+        istr += self.pmt_remit_city_nm
+        istr += self.pmt_remit_st_cd
+        istr += self.pmt_remit_zip_cd
+        istr += self.pmt_remit_cntry_cd
+        istr += self.vend_st_res_ind
+        istr += self.inv_received_dt
+        istr += self.goods_received_dt[0:8]
+        istr += self.org_shp_zip_cd[0:11]
+        istr += " "
+        istr += self.org_shp_state_cd[0:2]
+        istr += self.pmt_grp_cd
+        istr += self.inv_fob_cd
+        istr += self.disc_term_cd
+        istr += " "
+        istr += self.scheduled_pmt_dt
+        istr += self.pmt_non_check_ind
+        istr += self.attachment_req_ind
+        self.inv_header = istr
+
         # Per line creation
+        inv_list = inv.findall("./exl:invoice_line_list/exl:invoice_line", NSP)
         for inv_line in inv_list:
             self.line(inv_line)
 
@@ -208,47 +238,10 @@ class Apfeed(object):
         else:
             pmt_tax_cd = self.pmt_tax_cd_inv
 
-        # Validate
-        if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
-            if (not self.goods_received_dt.strip()
-                    or not self.org_shp_zip_cd.strip()
-                    or not self.org_shp_state_cd.strip()):
-                logging.error("Conditionally required field is empty:"
-                              "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
-                              "ORG_SHP_STATE_CD required when PMT_TAX_CD"
-                              " is B or C - for invoice: %s", self.vend_assign_inv_nbr)
-                self.errors += 1
-                return
+        if self.validate_line(pmt_tax_cd) > 0:
+            return
 
-        istr = "GENERALLIBRARY "
-        istr += self.now.strftime("%Y%m%d%H%M%S")
-        istr += "{:07d}".format(self.org_doc_nbr)
-        istr += self.emp_ind
-        istr += self.vend_nbr[0:10]
-        istr += "{:15}".format(self.vend_assign_inv_nbr[0:15])
-        istr += self.vend_assign_inv_date.strftime("%Y%m%d")
-        istr += self.addr_select_vend_nbr[0:14]
-        istr += self.pmt_remit_nm
-        istr += self.pmt_remit_line_1_addr
-        istr += self.pmt_remit_line_2_addr
-        istr += self.pmt_remit_line_3_addr
-        istr += self.pmt_remit_city_nm
-        istr += self.pmt_remit_st_cd
-        istr += self.pmt_remit_zip_cd
-        istr += self.pmt_remit_cntry_cd
-        istr += self.vend_st_res_ind
-        istr += self.inv_received_dt
-        istr += self.goods_received_dt[0:8]
-        istr += self.org_shp_zip_cd[0:11]
-        istr += " "
-        istr += self.org_shp_state_cd[0:2]
-        istr += self.pmt_grp_cd
-        istr += self.inv_fob_cd
-        istr += self.disc_term_cd
-        istr += " "
-        istr += self.scheduled_pmt_dt
-        istr += self.pmt_non_check_ind
-        istr += self.attachment_req_ind
+        istr = self.inv_header
         istr += "{:05d}".format(pmt_line_nbr)
         istr += self.fin_coa_cd
         istr += " "
@@ -267,6 +260,37 @@ class Apfeed(object):
         self.invoices.append(istr)
         self.count += 1
 
+    def validate(self):
+        """
+        Do checks on apfeed before generating
+        Will update the number of errors
+        """
+
+        # Cannot have invoice date in the future
+        if self.vend_assign_inv_date.date() > self.now.date():
+            logging.error("Skipping(%s) Invoice date(%s) is in the future",
+                          self.vend_assign_inv_nbr,
+                          self.vend_assign_inv_date)
+            self.errors += 1
+        return self.errors
+
+    def validate_line(self, pmt_tax_cd):
+        """
+        Do checks on apfeed before generating by line
+        Will update the number of errors
+        """
+
+        # Tax code has requirements if it is not 0
+        if pmt_tax_cd == 'B' or pmt_tax_cd == 'C':
+            if (not self.goods_received_dt.strip()
+                    or not self.org_shp_zip_cd.strip()
+                    or not self.org_shp_state_cd.strip()):
+                logging.error("Conditionally required field is empty:"
+                              "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and "
+                              "ORG_SHP_STATE_CD required when PMT_TAX_CD"
+                              " is B or C - for invoice: %s", self.vend_assign_inv_nbr)
+                self.errors += 1
+        return self.errors
 
     def __str__(self):
         """To string format which can be printed"""
