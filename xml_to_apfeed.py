@@ -100,7 +100,7 @@ class Apfeed(object):
         self.eids[eid]['amt'] += amt
         if utax:
             tax = amt * UTAX/100
-            self.eids[eid]['tax'] = tax
+            self.eids[eid]['tax'] += tax
             inv_num = self.vend_assign_inv_nbr
             if inv_num not in self.inv_tax:
                 self.inv_tax[inv_num] = 0
