@@ -26,7 +26,6 @@ from multiprocessing.pool import ThreadPool
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode, quote_plus, quote
 
-from pprint import pprint
 import cx_Oracle
 
 # Read config from config.ini

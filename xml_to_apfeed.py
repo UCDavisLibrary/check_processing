@@ -26,6 +26,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(SCRIPT_DIR, 'config.ini')
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open(CONFIG_PATH))
+UTAX = float(CONFIG.get('apfeed', 'tax_perc'))
 
 NSP = {'exl': 'http://com/exlibris/repository/acq/invoice/xmlbeans'}
 
@@ -50,6 +51,7 @@ class Apfeed(object):
         self.emp_ind = CONFIG.get('apfeed', 'emp_ind')
         self.errors = 0
         self.eids = dict()
+        self.inv_tax = dict()
 
         # will be set later
         self.goods_received_dt = " " * 8
@@ -88,16 +90,29 @@ class Apfeed(object):
         self.eft_override_ind = CONFIG.get('apfeed', 'eft_override_ind')
         self.ap_pmt_purpose_desc = " " * 120
 
-    def report_line(self, eid, amt):
+    def report_line(self, eid, amt, utax):
         """Generated a dictionary for reporting on external ids"""
         amt = float(amt)/100
-        if eid in self.eids:
-            self.eids[eid] += amt
-        else:
-            self.eids[eid] = amt
+        if eid not in self.eids:
+            self.eids[eid] = dict()
+            self.eids[eid]['amt'] = 0
+            self.eids[eid]['tax'] = 0
+        self.eids[eid]['amt'] += amt
+        if utax:
+            tax = amt * UTAX/100
+            self.eids[eid]['tax'] = tax
+            inv_num = self.vend_assign_inv_nbr
+            if inv_num not in self.inv_tax:
+                self.inv_tax[inv_num] = 0
+            self.inv_tax[inv_num] += tax
 
     def note_list(self, inv):
-        """figure out whether or not there are attachments"""
+        """
+        handles the notes field flags
+        ATTACH - Attachment
+        UTAX - use tax both for inv and inv_line
+        ATAX - Both
+        """
         note_list = inv.find("exl:noteList", NSP)
         if note_list is None:
             create_dt = inv.find("exl:invoice_ownered_entity/exl:creationDate", NSP)
@@ -108,8 +123,10 @@ class Apfeed(object):
                 "exl:note/exl:owneredEntity/exl:creationDate", NSP
             ).text
             content = note_list.find("exl:note/exl:content", NSP).text
-            if content == "ATTACHMENT":
+            if content == "ATTACH" or content == "ATAX":
                 self.attachment_req_ind = 'Y'
+            if content == "UTAX"  or content == "ATAX":
+                self.pmt_tax_cd_inv = "C"
 
     def add_inv(self, inv):
         """
@@ -159,13 +176,14 @@ class Apfeed(object):
             "exl:vendor_additional_code", NSP
         ).text.replace(" ", "")
 
-        self.note_list(inv)
-
+        self.pmt_tax_cd_inv = '0'
         vat_amt = float(
             inv.find("exl:vat_info/exl:vat_amount", NSP).text
         )
         if vat_amt > 0:
             self.pmt_tax_cd_inv = 'A'
+
+        self.note_list(inv)
 
         if self.validate() > 0:
             return
@@ -229,14 +247,16 @@ class Apfeed(object):
             ).text
         ) * 100)
 
-        # External ID report
-        self.report_line(account_nbr, pmt_amt)
-
         note = inv_line.find("exl:note", NSP)
-        if note is not None and re.match(r"^UTAX", note.text):
-            pmt_tax_cd = 'C'
-        else:
-            pmt_tax_cd = self.pmt_tax_cd_inv
+        pmt_tax_cd = self.pmt_tax_cd_inv
+        if note is not None:
+            if self.pmt_tax_cd_inv == 'C' and note.text and re.match(r"\bNUTAX\b", note.text):
+                pmt_tax_cd = '0'
+            elif note.text and re.match(r"\bUTAX\b", note.text):
+                pmt_tax_cd = 'C'
+
+        # report
+        self.report_line(account_nbr, pmt_amt, pmt_tax_cd)
 
         if self.validate_line(pmt_tax_cd) > 0:
             return
@@ -440,15 +460,24 @@ if __name__ == "__main__":
     # Generate report
     if not os.path.isdir(args.report_dir):
         os.mkdir(args.report_dir)
-    report_file = os.path.join(args.report_dir, "external_id.%d.csv" % mytime)
-    logging.info("Creating CSV %s", report_file)
+    export_id_file = os.path.join(args.report_dir, "external_id.%d.csv" % mytime)
+    logging.info("Creating CSV %s", export_id_file)
     logging.info("External ID Totals")
-    with open(report_file, 'wb') as report_file:
+    with open(export_id_file, 'wb') as report_file:
         w = csv.writer(report_file)
-        w.writerow(('External ID', 'Total'))
+        w.writerow(('External ID', 'Use Tax', 'Total'))
+        logging.info("External ID : Use Tax | Total")
         for k in apf.eids:
-            logging.info("%s: $%.2f", k, apf.eids[k])
-            w.writerow((k, "%.2f" % apf.eids[k]))
+            logging.info("%s: $%.2f | $%.2f", k, apf.eids[k]['tax'], apf.eids[k]['amt'])
+            w.writerow((k, "%.2f" % apf.eids[k]['tax'], "%.2f" % apf.eids[k]['amt']))
+
+    invoice_tax_file = os.path.join(args.report_dir, "invoice_tax.%d.csv" % mytime)
+    logging.info("Creating CSV %s", invoice_tax_file)
+    with open(invoice_tax_file, 'wb') as report_file:
+        w = csv.writer(report_file)
+        w.writerow(('Invoice', 'Use Tax Total'))
+        for k in apf.inv_tax:
+            w.writerow((k, "%.2f" % apf.inv_tax[k]))
 
     # move XML to archive
     for xml in xmls:

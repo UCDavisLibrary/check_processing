@@ -427,7 +427,7 @@
       <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
       <noteList>
         <note>
-          <content>ATTACHMENT</content>
+          <content>ATTACH</content>
           <owneredEntity>
             <createdBy>lynyoung</createdBy>
             <creationDate>20161117</creationDate>
@@ -513,7 +513,7 @@
       <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
       <noteList>
         <note>
-          <content>ATTACHMENT</content>
+          <content>ATTACH</content>
           <owneredEntity>
             <createdBy>lynyoung</createdBy>
             <creationDate>20161117</creationDate>
