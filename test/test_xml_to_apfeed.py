@@ -10,7 +10,7 @@ sys.path.append("./..")
 import xml_to_apfeed
 from pprint import pprint
 
-logging.disable(logging.CRITICAL)
+#logging.disable(logging.CRITICAL)
 cwd = os.getcwd()
 ns = {'exl': 'http://com/exlibris/repository/acq/invoice/xmlbeans'}
 
@@ -118,7 +118,6 @@ class TestBase(unittest.TestCase):
         org_doc_nbr = apf.org_doc_nbr
         for inv in invs:
             apf.add_inv(inv)
-        now = datetime.datetime.now()
 
         # test UTAX invoice/invoice line and NUTAX
         self.assertEquals(apf.invoices[0][389:390], '0', "UTAX should default to invoices if invoice line doesn't have UTAX");
@@ -148,6 +147,15 @@ class TestBase(unittest.TestCase):
 
         self.assertEquals(apf.eids, {'MAINBKS': {'amt': 509.64, 'tax': 18.474449999999997}}, "External ID Total not calculated correctly")
         self.assertEquals(apf.inv_tax, {'0201821': 7.098475, '0201822': 2.13875,'0201823': 2.13875,'0201824': 7.098475}, "Use tax calucated per line is incorrect")
+
+    def test_skip_lines(self):
+        """Test that we skip empty lines"""
+        apf = xml_to_apfeed.Apfeed()
+        invs = xml_to_apfeed.xml_to_invoices(os.path.join(xml_dir, "test_skip.xml"))
+        org_doc_nbr = apf.org_doc_nbr
+        for inv in invs:
+            apf.add_inv(inv)
+        self.assertEquals(apf.count, 3, "Skips lines that nothing of use like line number 4")
 
 if __name__ == '__main__':
     unittest.main()

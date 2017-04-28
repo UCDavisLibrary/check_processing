@@ -228,10 +228,10 @@ class Apfeed(object):
         """Adds it by line"""
         pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
         logging.debug("- Line Number: %s", pmt_line_nbr)
-        account_nbr = inv_line.find(
+        ext_id = inv_line.find(
             "exl:fund_info_list/exl:fund_info/exl:external_id",
             NSP
-        ).text
+        )
         po_line_nbr = inv_line.find(
             "exl:po_line_info/exl:po_line_number",
             NSP
@@ -240,12 +240,23 @@ class Apfeed(object):
             org_reference_id = " " * 8
         else:
             org_reference_id = strstr(po_line_nbr.text, '-')
-        pmt_amt = int(float(
-            inv_line.find(
-                "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
-                NSP
-            ).text
-        ) * 100)
+
+        amt_sum = inv_line.find(
+            "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
+            NSP
+        )
+
+        # Probably a empty line
+        if ext_id is None and amt_sum is None:
+            logging.debug(
+                "Invoice(%s) Line number: %d is empty - Skipping",
+                self.vend_assign_inv_nbr,
+                pmt_line_nbr
+            )
+            return
+
+        pmt_amt = int(float(amt_sum.text) * 100)
+        account_nbr = ext_id.text
 
         note = inv_line.find("exl:note", NSP)
         pmt_tax_cd = self.pmt_tax_cd_inv
