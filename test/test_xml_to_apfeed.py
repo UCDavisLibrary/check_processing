@@ -145,5 +145,9 @@ class TestBase(unittest.TestCase):
 
         self.assertEquals(apf.invoices[7][389:390], 'C', "Just ATAX set in invoice");
 
+
+        self.assertEquals(apf.eids, {'MAINBKS': {'amt': 509.64, 'tax': 18.474449999999997}}, "External ID Total not calculated correctly")
+        self.assertEquals(apf.inv_tax, {'0201821': 7.098475, '0201822': 2.13875,'0201823': 2.13875,'0201824': 7.098475}, "Use tax calucated per line is incorrect")
+
 if __name__ == '__main__':
     unittest.main()
