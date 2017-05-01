@@ -51,7 +51,7 @@ class Apfeed(object):
         self.emp_ind = CONFIG.get('apfeed', 'emp_ind')
         self.errors = 0
         self.eids = dict()
-        self.inv_tax = dict()
+        self.invs = dict()
 
         # will be set later
         self.goods_received_dt = " " * 8
@@ -94,17 +94,17 @@ class Apfeed(object):
         """Generated a dictionary for reporting on external ids"""
         amt = float(amt)/100
         if eid not in self.eids:
-            self.eids[eid] = dict()
-            self.eids[eid]['amt'] = 0
-            self.eids[eid]['tax'] = 0
+            self.eids[eid] = {'amt': 0, 'tax' : 0}
         self.eids[eid]['amt'] += amt
+        inv_num = self.vend_assign_inv_nbr
+        if inv_num not in self.invs:
+            self.invs[inv_num] = {'total': 0, 'tax' : 0}
+
+        self.invs[inv_num]['total'] += amt
         if utax != '0':
             tax = amt * UTAX/100
             self.eids[eid]['tax'] += tax
-            inv_num = self.vend_assign_inv_nbr
-            if inv_num not in self.inv_tax:
-                self.inv_tax[inv_num] = 0
-            self.inv_tax[inv_num] += tax
+            self.invs[inv_num]['tax'] += tax
 
     def note_list(self, inv):
         """
@@ -486,9 +486,9 @@ if __name__ == "__main__":
     logging.info("Creating CSV %s", invoice_tax_file)
     with open(invoice_tax_file, 'wb') as report_file:
         w = csv.writer(report_file)
-        w.writerow(('Invoice', 'Use Tax Total'))
-        for k in apf.inv_tax:
-            w.writerow((k, "%.2f" % apf.inv_tax[k]))
+        w.writerow(('Invoice', 'Use Tax Total', 'Amount Total'))
+        for k in apf.invs:
+            w.writerow((k, "%.2f" % apf.invs[k]['tax'], "%.2f" % apf.invs[k]['Total']))
 
     # move XML to archive
     for xml in xmls:

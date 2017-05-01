@@ -146,7 +146,8 @@ class TestBase(unittest.TestCase):
 
 
         self.assertEquals(apf.eids, {'MAINBKS': {'amt': 509.64, 'tax': 18.474449999999997}}, "External ID Total not calculated correctly")
-        self.assertEquals(apf.inv_tax, {'0201821': 7.098475, '0201822': 2.13875,'0201823': 2.13875,'0201824': 7.098475}, "Use tax calucated per line is incorrect")
+
+        self.assertEquals(apf.invs, {'0201821': {'tax': 7.098475, 'total': 127.41}, '0201822': {'tax': 2.13875, 'total': 127.41}, '0201823': {'tax': 2.13875, 'total': 127.41}, '0201824': {'tax': 7.098475, 'total': 127.41}}, "Use tax calucated per line is incorrect")
 
     def test_skip_lines(self):
         """Test that we skip empty lines"""
