@@ -487,8 +487,8 @@ if __name__ == "__main__":
     with open(invoice_tax_file, 'wb') as report_file:
         w = csv.writer(report_file)
         w.writerow(('Invoice', 'Use Tax Total', 'Amount Total'))
-        for k in apf.invs:
-            w.writerow((k, "%.2f" % apf.invs[k]['tax'], "%.2f" % apf.invs[k]['Total']))
+        for k in sorted(apf.invs):
+            w.writerow((k, "%.2f" % apf.invs[k]['tax'], "%.2f" % apf.invs[k]['total']))
 
     # move XML to archive
     for xml in xmls:
