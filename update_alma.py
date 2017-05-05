@@ -136,9 +136,10 @@ def fetch_vendor_code(code):
         first, second = data['additional_code'].split(" ")
         return code, first.lstrip("0") + '-' + second[0]
     except HTTPError as err:
-        logging.error("Trying to get json of vendor code: " + code)
-        logging.error("Failed to get: " + url + query_params)
-        logging.error('HTTPError = ' + str(err.code))
+        logging.warn("Trying to get json of vendor code: " + code)
+        logging.warn("Failed to get: " + url + query_params)
+        logging.warn('HTTPError = ' + str(err.code))
+        return code, ""
 
 def list_to_dict(key_function, values):
     """
@@ -286,7 +287,7 @@ def process_query(cur, vendors, interactive):
                 'check_num', 'pay_amt', 'pay_date', 'doc_type']
         kfs_d = dict(zip(keys, res))
         num = kfs_d['num']
-        if vendors and num in vendors and vendors[num] != kfs_d['vendor_id']:
+        if vendors and num in vendors and vendors[num] != kfs_d['vendor_id'] and vendors[num]:
             logging.debug("Invoice(%s) didn't have right vendor_id skipped"
                           " Expected %s got: %s", num, vendors[num], kfs_d['vendor_id'])
             continue
