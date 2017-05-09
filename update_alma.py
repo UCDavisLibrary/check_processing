@@ -17,16 +17,18 @@ import logging
 import os
 import re
 import shutil
+import sys
+import traceback
 import time
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
 from datetime import datetime
-from multiprocessing.pool import ThreadPool
-from urllib2 import Request, urlopen, HTTPError
-from urllib import urlencode, quote_plus, quote
+from multiprocessing import Pool
+from urllib import quote_plus, quote
 
 import cx_Oracle
+import requests
 
 # Read config from config.ini
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -106,39 +108,33 @@ def fetch_alma_json(offset, query=None):
     if query is None:
         query = 'status~ready_to_be_paid'
     url = 'https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/invoices/'
-    query_params = '?' + urlencode({
+    query_params = {
         quote_plus('q'): query,
         quote_plus('limit'): '100',
         quote_plus('offset'): offset,
         quote_plus('format'): 'json',
         quote_plus('apikey'): CONFIG.get("alma", "api_key")
-    })
-    request = Request(url + query_params)
-    request.get_method = lambda: 'GET'
-    try:
-        request_str = urlopen(request).read()
-        return json.loads(request_str), None
-    except HTTPError as err:
-        logging.error('HTTPError = ' + str(err.code))
+    }
+    req = requests.get(url, params=query_params)
+    return json.loads(req.text), None
 
 def fetch_vendor_code(code):
     """Uses Alma Web Api to get vendor id"""
     url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote(code)
-    query_params = '?' + urlencode({
-        quote_plus('format'): 'json',
+    query_params = {
+        quote_plus('format') : 'json',
         quote_plus('apikey') : CONFIG.get("alma", "api_key")
-    })
-    request = Request(url + query_params)
-    request.get_method = lambda: 'GET'
+    }
     try:
-        request_str = urlopen(request).read()
-        data = json.loads(request_str)
-        first, second = data['additional_code'].split(" ")
+        session = requests.Session()
+        req = session.get(url, params=query_params)
+        data = json.loads(req.text)
+        first, second = re.split(r"\D+", data['additional_code'], 2)
         return code, first.lstrip("0") + '-' + second[0]
-    except HTTPError as err:
+    except:
         logging.warn("Trying to get json of vendor code: " + code)
-        logging.warn("Failed to get: " + url + query_params)
-        logging.warn('HTTPError = ' + str(err.code))
+        logging.warn("Error: %s", sys.exc_info()[0])
+        traceback.print_exc()
         return code, ""
 
 def list_to_dict(key_function, values):
@@ -162,7 +158,10 @@ def get_waiting_invoices(query):
     # do in parallel urlopens to Alma if there are more requests needed
     if trc > 100:
         offsets = range(100, trc, 100)
-        results = ThreadPool(20).imap_unordered(fetch_alma_json, offsets)
+        pool = Pool(processes=20)
+        results = pool.imap_unordered(fetch_alma_json, offsets)
+        pool.close()
+        pool.join()
         for ret, error in results:
             if error is None:
                 invs.extend(ret['invoice'])
@@ -190,8 +189,11 @@ def get_waiting_invoices(query):
     # Get Vendors and their Vendor Ids
     vendors = dict()
     inv_vend_ids = dict()
-    results = ThreadPool(20).imap_unordered(fetch_vendor_code, vendor_codes)
-    for code, vend_id  in results:
+    pool = Pool(processes=20)
+    results = pool.imap_unordered(fetch_vendor_code, vendor_codes)
+    pool.close()
+    pool.join()
+    for code, vend_id in results:
         if error is None:
             vendors[code] = vend_id
         else:
