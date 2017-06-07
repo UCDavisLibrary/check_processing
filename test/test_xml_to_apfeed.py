@@ -158,5 +158,16 @@ class TestBase(unittest.TestCase):
             apf.add_inv(inv)
         self.assertEquals(apf.count, 3, "Skips lines that nothing of use like line number 4")
 
+
+    def test_carry(self):
+        """Test that we don't pass on attributes from previous run"""
+        apf = xml_to_apfeed.Apfeed()
+        invs = xml_to_apfeed.xml_to_invoices(os.path.join(xml_dir, "test_carry.xml"))
+        org_doc_nbr = apf.org_doc_nbr
+        for inv in invs:
+            apf.add_inv(inv)
+
+        self.inv_str(apf.invoices[4], 344, 345, 'N', 'Attachment shouldn\'t carry over to the next invoice')
+
 if __name__ == '__main__':
     unittest.main()

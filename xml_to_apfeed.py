@@ -163,6 +163,10 @@ class Apfeed(object):
         W       | 403 - 404  | EFT_OVERRIDE_IND
         """
 
+        # defaults per line
+        self.attachment_req_ind = 'N'
+        self.pmt_tax_cd_inv = '0'
+
         self.org_doc_nbr += 1
         # Foreach of the invoice lines
         self.vend_nbr = inv.find("exl:vendor_additional_code", NSP).text
@@ -176,7 +180,6 @@ class Apfeed(object):
             "exl:vendor_additional_code", NSP
         ).text.replace(" ", "")
 
-        self.pmt_tax_cd_inv = '0'
         vat_amt = float(
             inv.find("exl:vat_info/exl:vat_amount", NSP).text
         )

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment_data xmlns="http://com/exlibris/repository/acq/invoice/xmlbeans">
+  <invoice_list>
+    <invoice>
+      <invoice_number>71497</invoice_number>
+      <invoice_owner>University of California Davis</invoice_owner>
+      <approved_by>Lane Justine</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>80.49</sum>
+      </invoice_amount>
+      TL
+      <vendor_code>YBP</vendor_code>
+      <vendor_name>YBP LIBRARY SERVICES</vendor_name>
+      <vendor_additional_code>0000008563 0005</vendor_additional_code>
+      <vendor_FinancialSys_Code>0000008563 0005</vendor_FinancialSys_Code>
+      <vendor_liable_for_vat>true</vendor_liable_for_vat>
+      <vendor_payment_address_list>
+        <payment_address preferred="false">
+          <line1>PO BOX 277991</line1>
+          <line2>ATLANTA, GA  30384-7991</line2>
+          <types>
+            <type>Payment</type>
+          </types>
+        </payment_address>
+      </vendor_payment_address_list>
+      <unique_identifier>5435434470003126</unique_identifier>
+      <invoice_date>04/13/2017</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <noteList>
+        <note>
+          <content>ATTACH</content>
+          <owneredEntity>
+            <createdBy>JUSLANE</createdBy>
+            <creationDate>20170531</creationDate>
+            <customerId>3125</customerId>
+            <institutionId>3126</institutionId>
+            <modificationDate>20170531</modificationDate>
+            <modifiedBy>JUSLANE</modifiedBy>
+          </owneredEntity>
+        </note>
+      </noteList>
+      <invoice_ownered_entity>
+        <createdBy>szsaylin</createdBy>
+        <creationDate>20170419</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>JUSLANE</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>INCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>1</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>1</quantity>
+          <reporting_code>jts</reporting_code>
+          <total_price>74.12</total_price>
+          <price>74.12</price>
+          <po_line_info>
+            <fully_Invoiced_ind>true</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>9980981439603126</mms_record_id>
+            <meta_data_values>
+              <acqterms_identifier>1443817066</acqterms_identifier>
+              <acqterms_identifierType>ISBN</acqterms_identifierType>
+              <acqterms_place>Newcastle upon Tyne, UK :</acqterms_place>
+              <creator>Marszałek-Kawa, Joanna, author.</creator>
+              <date>2017</date>
+              <publisher>Cambridge Scholars Publishing,</publisher>
+            </meta_data_values>
+            <po_line_number>POL-18594</po_line_number>
+            <po_line_price>90.95</po_line_price>
+            <po_line_title>The politics of memory in post-authoritarian transitions / by Joanna Marszałek-Kawa [and three others].</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>74.12</sum>
+              </amount>
+              <code>H/SSXXXXXXXXPRF</code>
+              <name>H/SS PRINT FIRM</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>FIRM</fund_type>
+              <fund_type_desc>Firm order</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>2</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>0</quantity>
+          <total_price>1.0</total_price>
+          <price>1.0</price>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>1</sum>
+              </amount>
+              <code>GENLPOSTXXXXOTF</code>
+              <name>GENERAL POSTAGE OTHER FIRM</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>FIRM</fund_type>
+              <fund_type_desc>Firm order</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>3</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>0</quantity>
+          <total_price>5.37</total_price>
+          <price>5.37</price>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>5.37</sum>
+              </amount>
+              <code>GENLTAXXXXXXOTF</code>
+              <name>GENERAL TAX OTHER FIRM</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>FIRM</fund_type>
+              <fund_type_desc>Firm order</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>4</line_number>
+          <line_type>REGULAR</line_type>
+          <quantity>0</quantity>
+          <total_price>0.0</total_price>
+          <price>0.0</price>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
+    <invoice>
+      <invoice_number>30630856</invoice_number>
+      <invoice_owner>University of California Davis</invoice_owner>
+      <approved_by>Lane Justine</approved_by>
+      <invoice_amount>
+        <currency>USD</currency>
+        <sum>15118</sum>
+      </invoice_amount>
+      <vendor_code>S&amp;PGLOBAL</vendor_code>
+      <vendor_name>S&amp;P GLOBAL MARKET INTELLIGENCE LLC</vendor_name>
+      <vendor_additional_code>0001021072 0002</vendor_additional_code>
+      <vendor_liable_for_vat>false</vendor_liable_for_vat>
+      <vendor_payment_address_list>
+        <payment_address preferred="true">
+          <line1>S&amp;P GLOBAL MARKET INTELLIGENCE LLC</line1>
+          <line2>33356 COLLECTION CENTER DR</line2>
+          <line3>CHICAGO IL 60693-0333</line3>
+          <types>
+            <type>Payment</type>
+          </types>
+        </payment_address>
+      </vendor_payment_address_list>
+      <unique_identifier>5555553200003126</unique_identifier>
+      <invoice_date>05/11/2017</invoice_date>
+      <payment_method>ACCOUNTINGDEPARTMENT</payment_method>
+      <invoice_ownered_entity>
+        <createdBy>smunn</createdBy>
+        <creationDate>20170524</creationDate>
+        <customerId>3125</customerId>
+        <institutionId>3126</institutionId>
+        <modifiedBy>JUSLANE</modifiedBy>
+      </invoice_ownered_entity>
+      <vat_info>
+        <expended_from_fund_ind>true</expended_from_fund_ind>
+        <inclusive_ind>true</inclusive_ind>
+        <vat_amount>0.0</vat_amount>
+        <vat_percentage>0.0</vat_percentage>
+        <vat_type>INCLUSIVE</vat_type>
+        <vat_in_invoice_line_level>false</vat_in_invoice_line_level>
+      </vat_info>
+      <invoice_line_list>
+        <invoice_line>
+          <line_number>1</line_number>
+          <line_type>REGULAR</line_type>
+          <note>NA-GS 7/17-6/18</note>
+          <quantity>1</quantity>
+          <total_price>1995.0</total_price>
+          <price>1995.0</price>
+          <po_line_info>
+            <fully_Invoiced_ind>false</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>990033963530403126</mms_record_id>
+            <meta_data_values>
+              <acqterms_place>[New York, N.Y.] :</acqterms_place>
+              <date>c2001-</date>
+              <publisher>Standard &amp; Poor's</publisher>
+            </meta_data_values>
+            <vendor_note>Online access to begin w/July 2012</vendor_note>
+            <po_line_number>SER2166</po_line_number>
+            <po_line_price>14461.85</po_line_price>
+            <po_line_title>Standard &amp;amp; Poor's netAdvantage [electronic resource].</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>1995</sum>
+              </amount>
+              <code>H/SSXXXXXXXXELC</code>
+              <name>H/SS ELECTRONIC CONTINUATIONS</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>CONT</fund_type>
+              <fund_type_desc>Continuation</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+        <invoice_line>
+          <line_number>2</line_number>
+          <line_type>REGULAR</line_type>
+          <note>NA1AC6 7/17-6/18</note>
+          <quantity>1</quantity>
+          <total_price>13123.0</total_price>
+          <price>13123.0</price>
+          <po_line_info>
+            <fully_Invoiced_ind>false</fully_Invoiced_ind>
+            <po_line_owner>Shields Library</po_line_owner>
+            <mms_record_id>990033963530403126</mms_record_id>
+            <meta_data_values>
+              <acqterms_place>[New York, N.Y.] :</acqterms_place>
+              <date>c2001-</date>
+              <publisher>Standard &amp; Poor's</publisher>
+            </meta_data_values>
+            <vendor_note>Online access to begin w/July 2012</vendor_note>
+            <po_line_number>SER2166</po_line_number>
+            <po_line_price>14461.85</po_line_price>
+            <po_line_title>Standard &amp;amp; Poor's netAdvantage [electronic resource].</po_line_title>
+          </po_line_info>
+          <fund_info_list>
+            <fund_info>
+              <amount>
+                <currency>USD</currency>
+                <sum>13123</sum>
+              </amount>
+              <code>H/SSXXXXXXXXELC</code>
+              <name>H/SS ELECTRONIC CONTINUATIONS</name>
+              <fiscal_period>FY-2017</fiscal_period>
+              <external_id>MAINBKS</external_id>
+              <type>ALLOCATED</type>
+              <fund_type>CONT</fund_type>
+              <fund_type_desc>Continuation</fund_type_desc>
+            </fund_info>
+          </fund_info_list>
+        </invoice_line>
+      </invoice_line_list>
+    </invoice>
+  </invoice_list>
+</payment_data>
