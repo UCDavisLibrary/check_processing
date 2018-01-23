@@ -29,17 +29,19 @@ This repo contains just the code for the backend functionality, which is perform
 Each time a script is run, it will generate an individual log file along with creating a symbolick link to the latest log (scriptname.latest.log)
 
 ### MakeFile ###
-Run Unit Tests
-    make test
+```
+# Run Unit Tests
+make test
 
-Run Coverage
-    make coverage
+# Run Coverage
+make coverage
 
-Run pep8 style checking
-    make pep8
+# Run pep8 style checking
+make pep8
 
-Run Linter
-    make lint
+# Run Linter
+make lint
+```
 
 Currently installed on bigsys.
 Install to directory (default: /usr/local/alma/dafis)
@@ -52,7 +54,8 @@ Before you install please run test and lint
 #### Data Validations ####
 The following data validations are performed before converting an Alma XML export to the fixed width text format required by KFS:
 * Invoice date must be less than current date.
-* "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and ORG_SHP_STATE_CD fields required when PMT_TAX_CD == 'B' or 'C'
+* GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and ORG_SHP_STATE_CD fields required when PMT_TAX_CD == 'B' or 'C'
+The script will exit as soon as an invoice violates a validation. The script will produce no output (except for its log file).
 
 #### Format ####
 Each invoice line copied to campus server must be in the following fixed width text format:
