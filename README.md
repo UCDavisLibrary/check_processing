@@ -55,11 +55,13 @@ The following data validations are performed before converting an Alma XML expor
 
 #### Format ####
 Each invoice line copied to campus server must be in the following fixed width text format:
+```
 'GENERALLIBRARY AAAAAAAAAAAAAABBBBBBBCDDDDDDDDDDDEEEEEEEEEEEEEE'
 'FFFFFFFFGGGGGGGGGGGGGG                                          '
 '               HHHHHHHHHIIIIIIIIII JJK     LLLLLLLLMNOOOOO3 '
 'QQQQQQQ     RRRR          SSSSSSSSTUUUUUUUUUUUUVW             '
 '                           '
+```
 
 | Values | Position | Description |
 | --- | --- | --- |
@@ -88,7 +90,12 @@ Each invoice line copied to campus server must be in the following fixed width t
 | W | 403 - 404  | EFT_OVERRIDE_IND |
 
 ## Front End ##
-front end info goes here.
+Library finance staff control this application through an [interface on bigsys](https://bigsys.lib.ucdavis.edu/reports/check_processing/index.php). The following views are currently possible:
+**index.php**
+* Homepage with documentation links.
+
+**update_alma.php**
+* Does stuff.
 
 ## TODO ##
 * Phase 3
