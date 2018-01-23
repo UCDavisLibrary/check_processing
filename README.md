@@ -1,6 +1,6 @@
 # Alma-KFS Integration Application #
 
-Library finance maintains detailed records of media acquisitions/purchases in [Alma](https://ucdavis.alma.exlibrisgroup.com/mng/action/home.do?mode=ajax), and this data must be synced with a central campus data warehouse. As a result, the overall purpose of this application is to allow non-technical library staff to safely perform ETL operations between Alma (XML and JSON) and the KFS Oracle Database (SQL) maintained by campus.
+Library finance maintains detailed invoice records of media acquisitions/purchases in [Alma](https://ucdavis.alma.exlibrisgroup.com/mng/action/home.do?mode=ajax), and this data must be synced with a central campus data warehouse. As a result, the overall purpose of this application is to allow non-technical library staff to safely perform ETL operations between Alma (XML and JSON) and the KFS Oracle Database (SQL) maintained by campus.
 
 [Backend operations](https://github.com/UCDavisLibrary/check_processing#backend) were built using Python, while the [front-end](https://github.com/UCDavisLibrary/check_processing#front-end) is PHP.
 
@@ -52,6 +52,7 @@ Before you install please run test and lint
 #### Data Validations ####
 The following data validations are performed before converting an Alma XML export to the fixed width text format required by KFS:
 * Invoice date must be less than current date.
+* "GOODS_RECEIVED_DT, ORG_SHP_ZIP_CD and ORG_SHP_STATE_CD fields required when PMT_TAX_CD == 'B' or 'C'
 
 #### Format ####
 Each invoice line copied to campus server must be in the following fixed width text format:
@@ -91,6 +92,7 @@ Each invoice line copied to campus server must be in the following fixed width t
 
 ## Front End ##
 Library finance staff control this application through an [interface on bigsys](https://bigsys.lib.ucdavis.edu/reports/check_processing/index.php). The following views are currently possible:
+
 **index.php**
 * Homepage with documentation links.
 
