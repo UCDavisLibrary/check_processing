@@ -26,6 +26,7 @@ CONFIG_PATH = os.path.join(SCRIPT_DIR, 'config.ini')
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open(CONFIG_PATH))
 
+
 def create_ssh_client(scp_server, scp_user, scp_key_file):
     """
     Creates SSH Client for SCP
@@ -35,6 +36,7 @@ def create_ssh_client(scp_server, scp_user, scp_key_file):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(scp_server, username=scp_user, key_filename=scp_key_file)
     return client
+
 
 # pylint: disable=C0103
 if __name__ == "__main__":
@@ -130,11 +132,12 @@ if __name__ == "__main__":
         content = f.readlines()
         org_doc_nbr = content[-2][29:36]
 
-    # Upload to server
+    # Get finance server connection settings
     server = CONFIG.get("apfeed_scp_out", "server")
     user = CONFIG.get("apfeed_scp_out", "user")
     private_key = CONFIG.get("apfeed_scp_out", "private_key")
 
+    # Upload to server
     logging.info("Uploading via SCP")
     ssh = create_ssh_client(server, user, private_key)
     scp = SCPClient(ssh.get_transport())
