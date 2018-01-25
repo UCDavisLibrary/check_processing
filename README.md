@@ -108,9 +108,9 @@ Library finance staff control this application through an [interface on bigsys](
 
 ## Common Issues ##
 Library staff have reported the following common issues:
-1. **Feed didn't generate**
+1. **Feed didn't generate**  
    Check the ```xml_to_apfeed``` log matching the most recent time. Since the script didn't complete, there will be no system link to latest_log. It is likely that an invoice record tripped a validation. Remove the offending record from the XML file, and have library finance try again. Remind library finance to reset the payment status of the invoice in Alma, and include in a future batch.
-2. **Feed is wrong**
+2. **Feed is wrong**  
    Library finance manually reviews the report generated from ```xml_to_apfeed``` to verify information was entered correctly into Alma. If an invoice is wrong, move the XML from the archive back to the original ```almadafis``` staging directory. Delete the offending invoice. Delete the apfeed that was previously generated. Have finance generate the apfeed again, and remind to include invoice in future batch.
 
 ## TODO ##
