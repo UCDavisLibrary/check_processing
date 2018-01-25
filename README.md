@@ -14,19 +14,20 @@ This repo contains just the code for the backend functionality, which is perform
 4. If data [passes validations](https://github.com/UCDavisLibrary/check_processing#data-validations):
    - Exports apfeed (/apfeed).
    - Exports invoice groupby reports as csv (/apachereports).
-   - Moves original xml file to archive (/archive/xml).
+   - Moves original xml file to archive (/apachearchive/xml).
    - Marks log file as most recent log.
 
 **upload_apfeed.py**
 1. SCP uploads the apfeed text file to central campus finance server. SCP settings are in config file. When will campus load the file???
-2. Moves apfeed to archive (/archive/apfeed)
+2. Moves apfeed to archive (/apachearchive/apfeed)
 3. Updates the org_doc_nbr in the config file to match that of the last processed invoice. When xml_to_apfeed is run on the next Alma batch, this number will be loaded and incremented by 1 for each invoice processed.
 4. Marks log file as most recent log.
 
 **update_alma.py**
-1. Queries Alma for invoices waiting payments
-2. Queries KFS Oracle Database for invoices to see if they have been paid
-3. Creates an XML which will be updated to Alma to update invoices statuses
+1. Queries Alma API for invoices waiting payments. This value is set when library finance exports the initial XML file from Alma. Requires several API calls, which are done in parallel.
+2. Queries KFS Oracle Database for invoices using invoice numbers to see if they have been paid. Drops records if vendor_id is not correct or if two records have matching invoice ids. Retrieves the following fields: ```keys = ['doc_num', 'vendor_id', 'vendor_name', 'num','check_num', 'pay_amt', 'pay_date', 'doc_type']```
+3. Left joins Alma and KFS data. Logs if discrepancy in charge is more than 1% of Alma record.
+4. Creates an XML which will be updated to Alma to update invoices statuses
 
 ### Logging: ###
 Each time a script is run, it will generate an individual log file along with creating a symbolick link to the latest log (scriptname.latest.log)

@@ -36,6 +36,7 @@ CONFIG_PATH = os.path.join(SCRIPT_DIR, 'config.ini')
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open(CONFIG_PATH))
 
+
 def add_subele_text(parent, tag, text):
     """
     Add varable as tag and text to element tree
@@ -45,7 +46,10 @@ def add_subele_text(parent, tag, text):
 
 
 class ErpXml(object):
-    """ERP formated expected XML"""
+    """Formats and stores invoice and procurement data as XML for Alma upload.
+    ERP is acronym for this type of data: Enterprise Resource Planning
+    """
+
     def __init__(self):
         self.pcd = ET.Element(
             "payment_confirmation_data",
@@ -66,10 +70,11 @@ class ErpXml(object):
     def add_paid_invoice(self, num, alma, kfs):
         """
         Add an invoice to the list
-        Reads the alma and kfs invoice return values
-        num = invoice number
-        alma = data sent by alma
-        kfs = hash sent by kfs
+        Combines and converts the alma and kfs invoice values to ET.
+        Args:
+            num (str): invoice number.
+            alma (dict): Invoice from Alma.
+            kfs (dict) = Invoice with matching invoice ID from KFS.
         """
         logging.debug("kfs:[%s]", ','.join(map(str, kfs.values())))
         inv = ET.SubElement(self.inv_list, "invoice")
@@ -100,10 +105,20 @@ class ErpXml(object):
                           pay_date])
         self.count += 1
 
+
 def fetch_alma_json(offset, query=None):
     """
     Queries alma using REST API
-    query - string optional used if you want to modify the query
+
+    Args:
+        offset (int): Query offset parameter for accessing paginated results.
+        query - string optional used if you want to modify the query
+
+    Returns:
+        Two item tuple:
+            0) Dict containing invoices (list of dicts)
+                and total number of invoices marked as waiting to be payed.
+            1) None. Not sure why.
     """
     if query is None:
         query = 'status~ready_to_be_paid'
@@ -118,12 +133,13 @@ def fetch_alma_json(offset, query=None):
     req = requests.get(url, params=query_params)
     return json.loads(req.text), None
 
+
 def fetch_vendor_code(code):
     """Uses Alma Web Api to get vendor id"""
     url = "https://api-na.hosted.exlibrisgroup.com/almaws/v1/acq/vendors/%s" % quote(code)
     query_params = {
-        quote_plus('format') : 'json',
-        quote_plus('apikey') : CONFIG.get("alma", "api_key")
+        quote_plus('format'): 'json',
+        quote_plus('apikey'): CONFIG.get("alma", "api_key")
     }
     try:
         session = requests.Session()
@@ -137,6 +153,7 @@ def fetch_vendor_code(code):
         traceback.print_exc()
         return code, ""
 
+
 def list_to_dict(key_function, values):
     """
     turns list to dictionary using function
@@ -145,12 +162,26 @@ def list_to_dict(key_function, values):
 
 
 def get_waiting_invoices(query):
-    """Queries Alma REST Api for Invoices waiting payment"""
+    """ Gets invoices waiting payment in Alma.
+
+    Wrapper function for making multiple Alma Api queries.
+
+    Args:
+        query (str): Alma query.
+        If none, set to 'status~ready_to_be_paid'
+
+    Returns:
+        Three item tuple:
+            0) invoices (dict[inv_num]: {invoice})
+            1) invoice numbers (list),
+            2) invoice vendor ids (list).
+    """
 
     logging.info("Getting Waiting Invoices")
     # Do the initial query to find out how many records are necessary
     request_json, error = fetch_alma_json(0, query)
     if request_json is None:
+        logging.error("Unable to retrieve records from Alma")
         return None, None
     trc = int(request_json['total_record_count'])
     invs = request_json['invoice']
@@ -168,8 +199,8 @@ def get_waiting_invoices(query):
             else:
                 logging.error("error fetching: %s", error)
 
-    # Generates a list of ids along
-    # with remove any that don't have the current payment status
+    # Generates a list of inventory and vendor ids from api results.
+    # warns if current payment status is not 'not paid'
     inv_nums = []
     vendor_codes = []
     for invoice in invs[:]:
@@ -180,7 +211,7 @@ def get_waiting_invoices(query):
                 invoice['number']
             )
         inv_nums.append(invoice['number'])
-        if  invoice['vendor']['value'] not in vendor_codes:
+        if invoice['vendor']['value'] not in vendor_codes:
             vendor_codes.append(invoice['vendor']['value'])
 
     # Remap list to a dictionary using id as key
@@ -202,8 +233,17 @@ def get_waiting_invoices(query):
         inv_vend_ids[num] = vendors[invs[num]['vendor']['value']]
     return invs, inv_nums, inv_vend_ids
 
+
 def kfs_query(ids):
-    """Queries Accounting KFS Database to see if the invoices are paid"""
+    """Queries Accounting KFS Database to see if the invoices are paid
+
+    Args:
+        ids (list): Invoice numbers.
+
+    Returns:
+        cursor, if query is successful.
+        an empty dict, if not.
+    """
     kfs_invs = dict()
     logging.info("Running KFS Query")
     # If given empty set of ids
@@ -217,8 +257,8 @@ def kfs_query(ids):
                                     CONFIG.get("oracle", "server"),
                                     1521,
                                     'dsprod'
-                                    )
-                               )
+        )
+        )
     except cx_Oracle.DatabaseError:
         logging.error(
             'Failed to connect to %s\n',
@@ -277,10 +317,23 @@ def kfs_query(ids):
 
     return kfs_invs
 
+
 def process_query(cur, vendors, interactive):
     """
     Takes connection cursor and generates dictionary of query
-    Also matches them by vendor id
+    Handles records with matching invoice ids.
+    Drops invoice record if vendor_id does not match whats in Alma record.
+
+    Args:
+        cur: Cursor to KFS db (output of query_kfs function).
+            Aka records of invoice payment statuses.
+        vendors (dict): key=invoice number, value=Vendor id.
+        interactive (bool): Determines how to deal with rows with matching invoice ids
+            If True, lets user decide which row to keep through input.
+            If False, drops respective rows and logs action.
+
+    Returns:
+        Matching invoice records from KFS db. dict[invoice_num]: {record}
     """
     kfs_invs = dict()
     out = dict()
@@ -332,11 +385,22 @@ def process_query(cur, vendors, interactive):
                          key)
     return out
 
+
 def equal_dicts(dic1, dic2, ignore_keys):
-    """compares two diciontaries ignoring specific keys"""
+    """Runs equality check on two diciontaries ignoring specific keys.
+
+    Args:
+        dic1 (dict): Dictionary to compare to dic2
+        dic2 (dict): Dictionary to compare to dic1
+        ignore_keys (list): List of keys to remove from dics before comparing
+
+    Returns:
+        boolean.
+    """
     d1_filtered = dict((k, v) for k, v in dic1.iteritems() if k not in ignore_keys)
     d2_filtered = dict((k, v) for k, v in dic2.iteritems() if k not in ignore_keys)
     return d1_filtered == d2_filtered
+
 
 # pylint: disable=C0103
 if __name__ == '__main__':
@@ -407,7 +471,7 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    tolerance = float(args.tolerance)/100
+    tolerance = float(args.tolerance) / 100
 
     # Create and setup logging
     latest_log = os.path.join(args.log_dir, "update_alma.latest.log")
