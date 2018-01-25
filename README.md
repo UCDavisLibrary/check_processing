@@ -18,7 +18,7 @@ This repo contains just the code for the backend functionality, which is perform
    - Marks log file as most recent log.
 
 **upload_apfeed.py**
-1. SCP uploads the apfeed text file to central campus finance server. SCP settings are in config file. When will campus load the file???
+1. SCP uploads the apfeed text file to central campus finance server. SCP settings are in config file. <When will campus load the file?>
 2. Moves apfeed to archive (/apachearchive/apfeed)
 3. Updates the org_doc_nbr in the config file to match that of the last processed invoice. When xml_to_apfeed is run on the next Alma batch, this number will be loaded and incremented by 1 for each invoice processed.
 4. Marks log file as most recent log.
@@ -26,9 +26,9 @@ This repo contains just the code for the backend functionality, which is perform
 **update_alma.py**
 1. Queries Alma API for invoices waiting payments. This value is set when library finance exports the initial XML file from Alma. Requires several API calls, which are done in parallel.
 2. Queries KFS Oracle Database for invoices using invoice numbers to see if they have been paid. Drops records if vendor_id is not correct or if two records have matching invoice ids. Retrieves the following fields: ```keys = ['doc_num', 'vendor_id', 'vendor_name', 'num','check_num', 'pay_amt', 'pay_date', 'doc_type']```
-3. Left joins Alma and KFS data. Logs if discrepancy in charge is more than 1% of Alma record.
-4. Creates an XML which will be updated to Alma to update invoices statuses
-
+3. Left joins Alma and KFS data on invoice number. Logs if discrepancy in charge is more than 1% of Alma record.
+4. Creates an XML which will be uploaded to Alma to update invoice statuses. Copies XML to archive (/apachearchive/alma_input). Export fields ```('Doc #', 'Vender #', 'Vender Name','Invoice #','Check #','Amount','Date')``` as check_information_report.csv. <Not sure how xml makes it into Alma - must be uploaded by library finance.>
+5. Marks log file as most recent log.
 ### Logging: ###
 Each time a script is run, it will generate an individual log file along with creating a symbolick link to the latest log (scriptname.latest.log)
 
@@ -105,6 +105,13 @@ Library finance staff control this application through an [interface on bigsys](
 
 **update_alma.php**
 * Does stuff.
+
+## Common Issues ##
+Library staff have reported the following common issues:
+1. **Feed didn't generate**
+   Check the ```xml_to_apfeed``` log matching the most recent time. Since the script didn't complete, there will be no system link to latest_log. It is likely that an invoice record tripped a validation. Remove the offending record from the XML file, and have library finance try again. Remind library finance to reset the payment status of the invoice in Alma, and include in a future batch.
+2. **Feed is wrong**
+   Library finance manually reviews the report generated from ```xml_to_apfeed``` to verify information was entered correctly into Alma. If an invoice is wrong, move the XML from the archive back to the original ```almadafis``` staging directory. Delete the offending invoice. Delete the apfeed that was previously generated. Have finance generate the apfeed again, and remind to include invoice in future batch.
 
 ## TODO ##
 * Phase 3
