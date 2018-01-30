@@ -123,9 +123,10 @@ Library staff have reported the following common issues:
 * Phase 3
 * Create an install gnu make target to install to a directory, currently it is just copied manually
 
-## Attribution ##
+## Attribution and Contact ##
 * **Current Maintainer:** [Steve Pelkey](mailto:spelkey@ucdavis.edu)
 * **Original Python Developer:** [Alexander Lin](mailto:alxlin@ucdavis.edu)
 * **Original PHP Author:** [Michael Bavister](mailto:mdbavister@ucdavis.edu)
 * **Project Owner:** [Dale Snapp](mailto:dfsnapp@ucdavis.edu)
 * **Data analyst/mapping:** [Lisa Spagnolo](mailto:lcspagnolo@ucdavis.edu)
+* **Campus KFS Contact:** [afs-ops@ucdavis.edu](mailto:afs-ops@ucdavis.edu)
