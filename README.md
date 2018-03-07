@@ -71,31 +71,31 @@ Each invoice line copied to campus server must be in the following fixed width t
 '                           '
 ```
 
-| Values | Position | Description |
-| --- | --- | --- |
-| A | 15  - 29   | time now in %Y%m%d%H%M%S |
-| B | 29  - 36   | ORG_DOC_NBR |
-| C | 36  - 37   | EMP_IND |
-| D | 37  - 47   | VEND_CODE |
-| E | 47  - 62   | VEND_ASSIGN_INV_NBR |
-| F | 62  - 70   | VEND_ASSIGN_INV_DATE |
-| G | 70  - 84   | ADDR_SELECT_VEND_NBR |
-| H | 308 - 316  | GOODS_RECEIVED_DT |
-| I | 316 - 327  | ORG_SHP_ZIP_CD |
-| J | 327 - 329  | ORG_SHP_STATE_CD |
-| K | 329 - 330  | PMT_GRP_CD |
-| L | 335 - 343  | SCHEDULED_PMT_DT |
-| M | 343 - 344  | PMT_NON_CHECK_IND |
-| N | 344 - 345  | ATTACHMENT_REQ_IND |
-| O | 345 - 350  | PMT_LINE_NBR |
-| P | 350 - 351  | FIN_COA_CD |
-| Q | 352 - 359  | ACCOUNT_NBR |
-| R | 364 - 368  | FIN_OBJECT_CD |
-| S | 381 - 389  | ORG_REFERENCE_ID |
-| T | 389 - 390  | PMT_TAX_CD |
-| U | 390 - 402  | PMT_AMT |
-| V | 402 - 403  | APPLY_DISC_IND |
-| W | 403 - 404  | EFT_OVERRIDE_IND |
+| Values | Position | Description | Alma Field | Level |
+| --- | --- | --- | --- | --- |
+| A | 15  - 29   | time now in %Y%m%d%H%M%S | Generated at runtime | Invoice |
+| B | 29  - 36   | ORG_DOC_NBR | Read from config file | Invoice |
+| C | 36  - 37   | EMP_IND | Read from config file | Invoice |
+| D | 37  - 47   | VEND_CODE | vendor_additional_code | Invoice |
+| E | 47  - 62   | VEND_ASSIGN_INV_NBR | invoice_number | Invoice |
+| F | 62  - 70   | VEND_ASSIGN_INV_DATE | invoice_date | Invoice |
+| G | 70  - 84   | ADDR_SELECT_VEND_NBR | vendor_additional_code | Invoice |
+| H | 308 - 316  | GOODS_RECEIVED_DT | invoice_ownered_entity[creationDate] | Invoice |
+| I | 316 - 327  | ORG_SHP_ZIP_CD | Read from config file | Invoice |
+| J | 327 - 329  | ORG_SHP_STATE_CD | Read from config file | Invoice |
+| K | 329 - 330  | PMT_GRP_CD | Read from config file | Invoice |
+| L | 335 - 343  | SCHEDULED_PMT_DT | Generated at runtime | Invoice |
+| M | 343 - 344  | PMT_NON_CHECK_IND | Read from config file | Invoice |
+| N | 344 - 345  | ATTACHMENT_REQ_IND | Generated based on note[content] | Invoice |
+| O | 345 - 350  | PMT_LINE_NBR | line_number | Invoice line |
+| P | 350 - 351  | FIN_COA_CD | Read from config file | Invoice line |
+| Q | 352 - 359  | ACCOUNT_NBR | fund_info_list[fund_info][external_id] | Invoice line |
+| R | 364 - 368  | FIN_OBJECT_CD | Read from config file | Invoice line |
+| S | 381 - 389  | ORG_REFERENCE_ID | po_line_info[po_line_number] | Invoice line |
+| T | 389 - 390  | PMT_TAX_CD | Generated based on note[content] | Invoice line |
+| U | 390 - 402  | PMT_AMT | fund_info_list[fund_info][amount][sum] | Invoice line |
+| V | 402 - 403  | APPLY_DISC_IND | Read from config file | Invoice line |
+| W | 403 - 404  | EFT_OVERRIDE_IND | Read from config file | Invoice line |
 
 ## Front End ##
 Library finance staff control this application through an [interface on bigsys](https://bigsys.lib.ucdavis.edu/reports/check_processing/index.php). The primary views are:
@@ -126,7 +126,7 @@ Library staff have reported the following common issues:
 ## Attribution and Contact ##
 * **Current Maintainer:** [Steve Pelkey](mailto:spelkey@ucdavis.edu)
 * **Original Python Developer:** [Alexander Lin](mailto:alxlin@ucdavis.edu)
-* **Original PHP Author:** [Michael Bavister](mailto:mdbavister@ucdavis.edu)
+* **Original PHP Author:** [Michael Baxter](mailto:michael@e2-photo.com)
 * **Project Owner:** [Dale Snapp](mailto:dfsnapp@ucdavis.edu)
 * **Data analyst/mapping:** [Lisa Spagnolo](mailto:lcspagnolo@ucdavis.edu)
 * **Campus KFS Contact:** [afs-ops@ucdavis.edu](mailto:afs-ops@ucdavis.edu)
