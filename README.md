@@ -118,6 +118,10 @@ Library staff have reported the following common issues:
    Check the ```xml_to_apfeed``` log matching the most recent time. Since the script didn't complete, there will be no system link to latest_log. It is likely that an invoice record tripped a validation. Remove the offending record from the XML file, and have library finance try again. Remind library finance to reset the payment status of the invoice in Alma, and include in a future batch.
 2. **Feed is wrong**  
    Library finance manually reviews the report generated from ```xml_to_apfeed``` to verify information was entered correctly into Alma. If an invoice is wrong, move the XML from the archive back to the original ```almadafis``` staging directory. Delete the apfeed that was previously generated. Selecting 'No' to the upload prompt on the apfeed webpage will do both of these tasks for you. Delete the offending invoice in the XML. Have finance generate the apfeed again, and remind to include invoice in future batch.
+3. **Invoice is paid in KFS, but check is not in Alma**  
+   ```update_alma.py``` retrieves invoices that have been paid by querying the invoice id and the vendor id. If there is a mismatch on either, the invoice will not be updated. Note, KFS truncates invoice ids after 14 characters, so long invoice IDs in Alma will not match. Library finance staff did not want a validation in place to check for this (RT ticket 57240).
+4. **Alma is not being updated despite checks being processed**  
+   This likely means step 2 of the update alma page was skipped or botched. View Alma job history with API to verify - ```alma.conf.jobs.get('S4835897010003126')```
 
 ## TODO ##
 * Phase 3
