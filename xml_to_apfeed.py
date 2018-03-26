@@ -253,7 +253,7 @@ class Apfeed(object):
         for inv_line in inv_list:
             self.line(inv_line)
 
-    def line(self, inv_line):
+    def line(self, inv_line, fund_index=0):
         """Adds line-specific data to invoice fixed-width string.
 
         Appends formatted string to invoices instance attribute.
@@ -264,10 +264,23 @@ class Apfeed(object):
         """
         pmt_line_nbr = int(inv_line.find("exl:line_number", NSP).text)
         logging.debug("- Line Number: %s", pmt_line_nbr)
-        ext_id = inv_line.find(
+        ext_id = inv_line.findall(
             "exl:fund_info_list/exl:fund_info/exl:external_id",
             NSP
         )
+
+        # check if an invoice line is split across multiple funds
+        if len(ext_id) == 1:
+            ext_id = ext_id[0]
+        elif len(ext_id) > 1:
+            logging.debug("Line has multiple funds")
+            next_fund = fund_index + 1
+            if next_fund < len(ext_id):
+                self.line(inv_line, next_fund)
+            ext_id = ext_id[fund_index]
+        else:
+            ext_id = None
+
         po_line_nbr = inv_line.find(
             "exl:po_line_info/exl:po_line_number",
             NSP
@@ -277,10 +290,14 @@ class Apfeed(object):
         else:
             org_reference_id = strstr(po_line_nbr.text, '-')
 
-        amt_sum = inv_line.find(
+        amt_sum = inv_line.findall(
             "exl:fund_info_list/exl:fund_info/exl:amount/exl:sum",
             NSP
         )
+        if len(amt_sum) > 0:
+            amt_sum = amt_sum[fund_index]
+        else:
+            amt_sum = None
 
         # Probably a empty line
         if ext_id is None and amt_sum is None:
