@@ -358,6 +358,12 @@ class Apfeed(object):
                           self.vend_assign_inv_nbr,
                           self.vend_assign_inv_date)
             self.errors += 1
+
+        if len(self.addr_select_vend_nbr) < 14:
+            logging.error("Skipping(%s) addr_select_vend_nbr(%s) is less than 14 characters",
+                          self.vend_assign_inv_nbr,
+                          self.addr_select_vend_nbr)
+            self.errors += 1
         return self.errors
 
     def validate_line(self, pmt_tax_cd):
