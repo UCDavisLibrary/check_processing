@@ -29,7 +29,8 @@ class TestBase(unittest.TestCase):
         server = config.get("apfeed_scp_out", "server")
         user = config.get("apfeed_scp_out", "user")
         private_key =config.get("apfeed_scp_out", "private_key")
-        self.assertIsNotNone(upload_apfeed.create_ssh_client(server, user, private_key), "SSH Client failed to create")
+        port = CONFIG.get("apfeed_scp_out", "port")
+        self.assertIsNotNone(upload_apfeed.create_ssh_client(server, user, private_key, port), "SSH Client failed to create")
 
 if __name__ == '__main__':
     unittest.main()
