@@ -136,10 +136,11 @@ if __name__ == "__main__":
     server = CONFIG.get("apfeed_scp_out", "server")
     user = CONFIG.get("apfeed_scp_out", "user")
     private_key = CONFIG.get("apfeed_scp_out", "private_key")
+    port = CONFIG.get("apfeed_scp_out", "port")
 
     # Upload to server
     logging.info("Uploading via SCP")
-    ssh = create_ssh_client(server, user, private_key)
+    ssh = create_ssh_client(server, user, private_key, port)
     scp = SCPClient(ssh.get_transport())
     scp.put(apfeed_file_path)
     logging.info("Uploaded: %s", apfeed_file_path)
