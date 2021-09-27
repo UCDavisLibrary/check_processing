@@ -511,7 +511,7 @@ if __name__ == "__main__":
     if args.input_file is None:
         xml_dir = args.xml_dir
         for xml_file in os.listdir(xml_dir):
-            if xml_file.endswith(".xml"):
+            if xml_file.endswith("ShieldsLibrary.xml"):
                 xmls.append(os.path.join(xml_dir, xml_file))
     else:
         xmls = [args.input_file]
